@@ -3,7 +3,7 @@
 # **Advanced Barrel Pattern Enforcement for JavaScript/TypeScript Projects**
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-1.0.1-blue.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.0.2-blue.svg" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/>
 </div>

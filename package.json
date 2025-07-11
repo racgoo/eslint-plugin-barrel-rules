@@ -3,10 +3,10 @@
   "description": "Enforce barrel module pattern",
   "repository": {
     "type": "git",
-    "url": "https://github.com/racgoo/eslint-plugin-barrel-module"
+    "url": "https://github.com/racgoo/eslint-plugin-barrel-rules"
   },
   "bugs": {
-    "url": "https://github.com/racgoo/eslint-plugin-barrel-module/issues"
+    "url": "https://github.com/racgoo/eslint-plugin-barrel-rules/issues"
   },
   "files": [
     "dist",
@@ -23,7 +23,7 @@
     "encapsulation directory",
     "enforce barrel pattern"
   ],
-  "version": "1.0.1",
+  "version": "1.0.2",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
