@@ -75,7 +75,11 @@ const __dirname = path.dirname(__filename);
 export default [
   {
     plugins: {
-      "barrel-rules": enforceBarrelPattern,
+      "barrel-rules": {
+        rules: {
+          "enforce-barrel-pattern": enforceBarrelPattern,
+        },
+      },
     },
     rules: {
       "barrel-rules/enforce-barrel-pattern": [
