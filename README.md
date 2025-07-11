@@ -9,7 +9,7 @@
 </div>
 
 <div align="center">
-  <img width="320" alt="Scry" src="https://github.com/user-attachments/assets/d6ca7480-658b-484a-8a51-00edbcb082c7" />
+  <img width="320" alt="Scry" src="https://github.com/user-attachments/assets/dc11d2d4-3896-4def-bf5f-e778086a3de8" />
 </div>
 
 Github: [https://github.com/racgoo/eslint-plugin-barrel-module](https://github.com/racgoo/eslint-plugin-barrel-module)
