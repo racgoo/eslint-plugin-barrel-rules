@@ -1,0 +1,48 @@
+{
+  "name": "eslint-plugin-barrel-rules",
+  "description": "Enforce barrel module pattern",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/racgoo/eslint-plugin-barrel-module"
+  },
+  "bugs": {
+    "url": "https://github.com/racgoo/eslint-plugin-barrel-module/issues"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "eslint",
+    "eslint-plugin",
+    "eslint-plugin-barrel-rules",
+    "barrel-module",
+    "barrel pattern",
+    "encapsulation directory",
+    "enforce barrel pattern"
+  ],
+  "version": "0.1.0",
+  "type": "module",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup src/index.ts --dts --format cjs,esm",
+    "type-check": "tsc --noEmit",
+    "release": "pnpm run build && pnpm publish --access=public"
+  },
+  "dependencies": {
+    "@typescript-eslint/utils": "^8.36.0",
+    "fast-glob": "^3.3.3",
+    "resolve": "^1.22.10",
+    "tsconfig-paths": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.13",
+    "@types/resolve": "^1.20.6",
+    "tsup": "^8.5.0",
+    "typescript": "~5.8.3"
+  }
+}
