@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2015",
     "useDefineForClassFields": true,
-    "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ES2015",
+    "lib": ["ES2015"],
     "skipLibCheck": true,
-    "jsx": "react-jsx",
     "declaration": true,
     "declarationDir": "dist/types",
     "emitDeclarationOnly": false,

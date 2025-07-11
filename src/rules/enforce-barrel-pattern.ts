@@ -45,7 +45,7 @@ const enforceBarrelPattern: RuleModule<MessageIds, Options> = {
     );
 
     return {
-      //check only import declaration
+      //check only import declaration(ESM)
       ImportDeclaration(node: TSESTree.ImportDeclaration) {
         //get raw import path(ex: "../../../domains/test/hooks/test-hook")
         const rawImportPath = node.source.value as string;

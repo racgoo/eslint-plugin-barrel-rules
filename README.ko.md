@@ -16,43 +16,40 @@ Github: [https://github.com/racgoo/eslint-plugin-barrel-module](https://github.c
 
 NPM: [https://github.com/racgoo/eslint-plugin-barrel-module](https://github.com/racgoo/eslint-plugin-barrel-module)
 
-🇰🇷 [README (Korean)](./README.ko.md)
+---
+
+## 소개
+
+**eslint-plugin-barrel-rules**는  
+JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제하고, 모듈 경계와 캡슐화를 보장하는 고급 ESLint 플러그인입니다.
+
+지정한 디렉토리(예: `src/domains/*`)의 내부 구현은  
+오직 해당 디렉토리의 **index(배럴) 파일**을 통해서만 접근할 수 있도록 강제합니다.  
+내부 파일을 직접 import하는 것을 차단하여  
+**모듈화, 추상화, 유지보수성, 확장성**을 극대화합니다.
 
 ---
 
-## Introduction
-
-**eslint-plugin-barrel-rules** is an advanced ESLint plugin  
-that enforces the Barrel Pattern in JavaScript/TypeScript projects,  
-ensuring strict module boundaries and encapsulation.
-
-You can specify directories (e.g., `src/domains/*`) where  
-internal implementation details must only be accessed via the directory’s **index (barrel) file**.  
-Direct imports from internal files are blocked, maximizing  
-**modularity, abstraction, maintainability, and scalability**.
-
----
-
-## Supports
+## 지원 환경
 
 - Node.js (ES2015+)
-- Supports ES Modules (ESM)
+- ES Modules(ESM)
 
 ---
 
-## Features
+## 주요 기능
 
-- **Barrel Pattern Enforcement**  
-  Only allows imports from the index (barrel) file of specified directories  
-  (e.g., `import ... from "../domains/foo"` is allowed,  
-  but `import ... from "../domains/foo/components/Bar"` is blocked)
+- **Barrel Pattern 강제**  
+  지정한 디렉토리의 index(배럴) 파일을 통해서만 import를 허용  
+  (예: `import ... from "../domains/foo"`는 허용,  
+  `import ... from "../domains/foo/components/Bar"`는 차단)
 
-- **High-performance glob matching**  
-  Specify multiple directories using glob patterns like `src/domains/*`
+- **고성능 glob 매칭**  
+  `src/domains/*`처럼 glob 패턴으로 여러 디렉토리 지정 가능
 
 ---
 
-## Install
+## 설치
 
 ```bash
 npm i eslint-plugin-barrel-rules --save-dev
@@ -64,14 +61,14 @@ pnpm add -D eslint-plugin-barrel-rules
 
 ---
 
-## Usage
+## 사용법
 
 ```js
 import { fileURLToPath } from "url";
 import path from "path";
 import { enforceBarrelPattern } from "eslint-plugin-barrel-rules";
 
-//ESM not support __dirname(custom __dirname)
+//ESM은 __dirname을 지원하지 않기에 직접 구현합니다.
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -84,9 +81,9 @@ export default [
       "barrel-rules/enforce-barrel-pattern": [
         "error",
         {
-          //Enforced directories
+          //Barrel Pattern을 강제할 디렉토리를 정의합니다(baseDir 기준으로 상대경로)
           paths: ["src/domains/*"],
-          //BaseDir(root path, mutable)
+          //paths들의 root경로를 지정합니다.
           baseDir: __dirname,
         },
       ],
@@ -97,30 +94,30 @@ export default [
 
 ---
 
-## Example
+## 예시
 
 ```ts
-// ❌ Direct import from internal file is blocked
+// ❌ 내부 파일을 직접 import하면 차단됩니다.
 import { Test } from "../domains/foo/components/Test";
 
-// ✅ Must import via the barrel (index) file
+// ✅ 반드시 배럴(index) 파일을 통해 import해야 합니다.
 import { Test } from "../domains/foo";
 ```
 
 ---
 
-## Future Work
+## 앞으로의 계획
 
-- More rules for module boundaries and abstraction
+- 더 다양한 모듈 경계/추상화 관련 룰 추가 예정
 
-- **Alias/tsconfig Support**  
-  Fully supports TypeScript `paths`, Vite `resolve.alias`, and other custom path mappings
+- **Alias/tsconfig 지원**  
+  TypeScript `paths`, Vite `resolve.alias` 등 다양한 경로 매핑 완벽 지원 예정
 
-- **CJS Support**
+- **Commonjs 지원**
 
 ---
 
-## Contact
+## 문의
 
-Questions, suggestions, bug reports, and contributions are welcome!  
+질문, 제안, 버그 리포트, 기여 모두 환영합니다!  
 [[📬 send mail]](mailto:lhsung98@naver.com)
