@@ -12,9 +12,9 @@
   <img width="320" alt="Scry" src="https://github.com/user-attachments/assets/dc11d2d4-3896-4def-bf5f-e778086a3de8" />
 </div>
 
-Github: [https://github.com/racgoo/eslint-plugin-barrel-module](https://github.com/racgoo/eslint-plugin-barrel-module)
+Github: [https://github.com/racgoo/eslint-plugin-barrel-rules](https://github.com/racgoo/eslint-plugin-barrel-rules)
 
-NPM: [https://github.com/racgoo/eslint-plugin-barrel-module](https://github.com/racgoo/eslint-plugin-barrel-module)
+NPM: [https://www.npmjs.com/package/eslint-plugin-barrel-rules](https://www.npmjs.com/package/eslint-plugin-barrel-rules)
 
 🇰🇷 [README (Korean)](./README.ko.md)
 
