@@ -4,10 +4,10 @@ import path from "path";
 import resolve from "resolve";
 import fastGlob from "fast-glob";
 
-type Options = [{ paths: string[]; baseDir: string }];
+type Option = { paths: string[]; baseDir: string };
 type MessageIds = "DirectImportDisallowed";
 
-const enforceBarrelPattern: RuleModule<MessageIds, Options> = {
+const enforceBarrelPattern: RuleModule<MessageIds, Option[]> = {
   meta: {
     type: "problem",
     docs: {
@@ -32,17 +32,25 @@ const enforceBarrelPattern: RuleModule<MessageIds, Options> = {
   defaultOptions: [{ paths: [], baseDir: process.cwd() }],
   create(context) {
     //extract options
-    const options = context.options[0];
-    const baseDir = options.baseDir;
+    const option = context.options[0];
+    const baseDir = option.baseDir;
 
     //get target paths(allowed wildcard with fast-glob)
-    const targetPaths = options.paths.flatMap((_path) =>
-      fastGlob.sync(_path, {
+    const targetPaths = option.paths.flatMap((_path) => {
+      //get target paths with fast-glob(directory names)
+      const globResult = fastGlob.sync(_path, {
         cwd: baseDir,
         onlyDirectories: true,
         absolute: true,
-      })
-    );
+      });
+      //if no directory was found, throw error
+      if (globResult.length === 0) {
+        throw new Error(
+          `[enforce-barrel-pattern] In baseDir: ${baseDir}, path: ${_path}, any directory was not found`
+        );
+      }
+      return globResult;
+    });
 
     return {
       //check only import declaration(ESM)
