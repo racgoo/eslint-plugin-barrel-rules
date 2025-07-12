@@ -32,8 +32,10 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
 
 ## 지원 환경
 
+- ESLint 9 (Flat config, 현재 지원)
+  > ⚠️ ESLint 8 (구 config) 지원도 곧 추가될 예정입니다!
 - Node.js (ES2015+)
-- ES Modules(ESM)
+- ES Modules (ESM) 지원
 
 ---
 
