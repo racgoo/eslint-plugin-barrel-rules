@@ -35,6 +35,8 @@ Direct imports from internal files are blocked, maximizing
 
 ## Supports
 
+- ESLint 9 (Flat config, currently supported)
+  > ⚠️ ESLint 8 (legacy config) support is planned for a future release!
 - Node.js (ES2015+)
 - Supports ES Modules (ESM)
 
