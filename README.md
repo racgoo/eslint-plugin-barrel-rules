@@ -26,7 +26,7 @@ NPM: [https://www.npmjs.com/package/eslint-plugin-barrel-rules](https://www.npmj
 that enforces the Barrel Pattern in JavaScript/TypeScript projects,  
 ensuring strict module boundaries and encapsulation.
 
-You can specify directories (e.g., `src/domains/*`) where  
+You can specify directories (e.g., `src/domains/*`, `src/domains/cart`) where  
 internal implementation details must only be accessed via the directory’s **index (barrel) file**.  
 Direct imports from internal files are blocked, maximizing  
 **modularity, abstraction, maintainability, and scalability**.
@@ -35,10 +35,12 @@ Direct imports from internal files are blocked, maximizing
 
 ## Supports
 
-- ESLint 9 (Flat config, currently supported)
-  > ⚠️ ESLint 8 (legacy config) support is planned for a future release!
+- ESLint 9
+  > Flat config(eslint.config.js), for TypeScript support, use the "typescript-eslint" config
+- ESLint 8
+  > Legacy config(.eslintrc.js), for TypeScript support, set "@typescript-eslint/parser" as the parser and add "@typescript-eslint" as a plugin
 - Node.js (ES2015+)
-- Supports ES Modules (ESM)
+- Supports both ES Modules and CommonJS
 
 ---
 
@@ -66,39 +68,77 @@ pnpm add -D eslint-plugin-barrel-rules
 
 ---
 
-## Usage
+## Eslint8 Usage
 
 ```js
+file(.eslintrc.js)
+
+module.exports = {
+  ...(any other options)
+  //if you use typescript, needs "@typescript-eslint/parser", "@typescript-eslint" install and setup plz..
+  parser: "@typescript-eslint/parser",
+  plugins: ["@typescript-eslint", "barrel-rules"],
+  rules: {
+    "barrel-rules/enforce-barrel-pattern": [
+      "error",
+      {
+        // The path to the directory that should be protected by using a barrel file. This path is relative to baseDir.
+        paths: ["src/typescript/barrel/*", "src/javascript/barrel/*"],
+        // Optional config. The default value is the directory where ESLint is executed.
+// For example, if you run `npx eslint .`, the default will be the current working directory at the time of execution.
+        baseDir: __dirname,
+      },
+    ],
+  },
+};
+```
+
+---
+
+## Eslint9 Usage
+
+```js
+file(eslintrc.config.js);
+
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import { globalIgnores } from "eslint/config";
+import barrelRules from "eslint-plugin-barrel-rules";
+//for __dirname in ESM
 import { fileURLToPath } from "url";
 import path from "path";
-import { enforceBarrelPattern } from "eslint-plugin-barrel-rules";
-
-//ESM not support __dirname(custom __dirname)
+//custom __dirname
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-export default [
+//typescript-config (if you use typescript, needs it)
+export default tseslint.config([
+  globalIgnores(["dist"]),
   {
-    plugins: {
-      "barrel-rules": {
-        rules: {
-          "enforce-barrel-pattern": enforceBarrelPattern,
-        },
-      },
+    ...(any other options)
+    files: ["**/*.{ts,tsx}"],
+    extends: [js.configs.recommended, tseslint.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 2020,
     },
+    //just set barrle-rules plugin
+    plugins: {
+      "barrel-rules": barrelRules,
+    },
+    //just set your setting for barrel-rules
     rules: {
       "barrel-rules/enforce-barrel-pattern": [
         "error",
         {
-          //Enforced directories
-          paths: ["src/domains/*"],
-          //BaseDir(root path, mutable)
+          // The path to the directory that should be protected by using a barrel file. This path is relative to baseDir.
+          paths: ["src/typescript/barrel/*"],
+          // Optional config. The default value is the directory where ESLint is executed.
+          // For example, if you run `npx eslint .`, the default will be the current working directory at the time of execution.
           baseDir: __dirname,
         },
       ],
     },
   },
-];
+]);
 ```
 
 ---
@@ -122,11 +162,15 @@ import { Test } from "../domains/foo";
 - **Alias/tsconfig Support**  
   Fully supports TypeScript `paths`, Vite `resolve.alias`, and other custom path mappings
 
-- **CJS Support**
+- **CJS Support** (OK)
+- **Eslint8 Support** (OK)
+- **Bundle Plugin(capsure any features in plugin)**
+  (OK)
+- **Wrong Path Setup Validator** (OK)
 
 ---
 
 ## Contact
 
 Questions, suggestions, bug reports, and contributions are welcome!  
-[[📬 send mail]](mailto:lhsung98@naver.com)
+[[📬 send mail lhsung98@naver.com]](mailto:lhsung98@naver.com)
