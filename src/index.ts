@@ -1,10 +1,11 @@
 import { enforceBarrelPattern } from "./rules/enforce-barrel-pattern";
 
-export { enforceBarrelPattern };
+const rules = {
+  "enforce-barrel-pattern": enforceBarrelPattern,
+};
 
-//CJS 지원
-// export default {
-//     rules: {
-//       "enforce-barrel-pattern": enforceBarrelPattern,
-//     },
-//   };
+// ESM(eslint9+)
+export default { rules };
+
+// // CJS(eslint8+)
+module.exports = { rules };
