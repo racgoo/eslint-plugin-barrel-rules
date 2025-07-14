@@ -20,6 +20,7 @@ const enforceBarrelPattern: RuleModule<MessageIds, Option[]> = {
           paths: { type: "array", items: { type: "string" } },
           baseDir: { type: "string" },
         },
+        required: ["paths"],
         additionalProperties: false,
       },
     ],
@@ -34,7 +35,6 @@ const enforceBarrelPattern: RuleModule<MessageIds, Option[]> = {
     //extract options
     const option = context.options[0];
     const baseDir = option.baseDir;
-
     //get target paths(allowed wildcard with fast-glob)
     const targetPaths = option.paths.flatMap((_path) => {
       //get target paths with fast-glob(directory names)
@@ -51,7 +51,6 @@ const enforceBarrelPattern: RuleModule<MessageIds, Option[]> = {
       }
       return globResult;
     });
-
     return {
       //check only import declaration(ESM)
       ImportDeclaration(node: TSESTree.ImportDeclaration) {
