@@ -53,6 +53,22 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
 
 ---
 
+## 규칙(Rules)
+
+1. **enforce-barrel-pattern**  
+   모듈 임포트 시 배럴 패턴(Barrel Pattern)을 강제합니다.  
+   지정한 배럴 파일을 통해서만 임포트가 가능하며, 내부 모듈에 직접 접근하는 것을 방지합니다.
+
+   - **옵션:**
+     - `paths`: 배럴 패턴으로 보호할 디렉토리 경로(`baseDir` 기준 상대경로)
+     - `baseDir` (선택): `paths` 해석 기준이 되는 디렉토리. 기본값은 ESLint 실행 위치입니다.
+
+2. **no-wildcard**  
+   `import * as foo from "module"`, `export * from "./module"`과 같은 와일드카드(네임스페이스) import/export를 금지합니다.  
+   트리쉐이킹 및 코드 명확성을 위해 반드시 개별(named) import/export만 허용합니다.
+
+---
+
 ## 설치
 
 ```bash
@@ -86,6 +102,8 @@ module.exports = {
         baseDir: __dirname,
       },
     ],
+    // import * 또는 export * 금지
+    "barrel-rules/no-wildcard": ["error"],
   },
 };
 ```
@@ -133,6 +151,8 @@ export default tseslint.config([
           baseDir: __dirname,
         },
       ],
+      // import * 또는 export * 금지
+      "barrel-rules/no-wildcard": ["error"],
     },
   },
 ]);
@@ -154,12 +174,13 @@ import { Test } from "../domains/foo";
 
 ## 앞으로의 계획
 
-- 더 다양한 모듈 경계/추상화 관련 룰 추가 예정
-- Alias/tsconfig 지원: TypeScript의 paths, Vite의 resolve.alias, 기타 커스텀 경로 매핑을 완벽하게 지원
+- 더 다양한 모듈 경계/추상화 관련 룰 추가 예정 (~Ing)
+- Alias/tsconfig 지원: TypeScript의 paths, Vite의 resolve.alias, 기타 커스텀 경로 매핑을 완벽하게 지원 (~Ing)
 - **CJS 지원** (OK)
 - **ESLint 8 지원** (OK)
 - **번들 플러그인(플러그인 내 모든 기능 통합)** (OK)
 - **잘못된 경로 설정 검증 기능** (OK)
+- **와일드카드 import/export 제한 규칙** (OK)
 
 ---
 
