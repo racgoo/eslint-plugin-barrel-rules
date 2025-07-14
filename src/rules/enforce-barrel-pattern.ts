@@ -5,9 +5,9 @@ import resolve from "resolve";
 import fastGlob from "fast-glob";
 
 type Option = { paths: string[]; baseDir: string };
-type MessageIds = "DirectImportDisallowed";
+type DirectImportMessageId = "DirectImportDisallowed";
 
-const enforceBarrelPattern: RuleModule<MessageIds, Option[]> = {
+const enforceBarrelPattern: RuleModule<DirectImportMessageId, Option[]> = {
   meta: {
     type: "problem",
     docs: {

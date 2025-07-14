@@ -1,7 +1,9 @@
 import { enforceBarrelPattern } from "./rules/enforce-barrel-pattern";
+import { noWildcard } from "./rules/no-wildcard";
 
 const rules = {
   "enforce-barrel-pattern": enforceBarrelPattern,
+  "no-wildcard": noWildcard,
 };
 
 // ESM(eslint9+)
