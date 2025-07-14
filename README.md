@@ -56,6 +56,22 @@ Direct imports from internal files are blocked, maximizing
 
 ---
 
+## Rules
+
+1. **enforce-barrel-pattern**  
+   Enforces the barrel pattern for module imports.  
+   Only allows imports from designated barrel files and prevents direct access to internal modules.
+
+   - **Options:**
+     - `paths`: The directories to be protected by the barrel pattern (relative to `baseDir`).
+     - `baseDir` (optional): The base directory for resolving `paths`. Defaults to the ESLint execution directory.
+
+2. **no-wildcard**  
+   Disallows wildcard (namespace) imports such as `import * as foo from "module"`, `export * from "./module"`
+   Forces you to use named imports for better tree-shaking and code clarity.
+
+---
+
 ## Install
 
 ```bash
@@ -89,6 +105,8 @@ module.exports = {
         baseDir: __dirname,
       },
     ],
+    // Disallow wildcard (namespace) import/export.
+    "barrel-rules/no-wildcard": ["error"],
   },
 };
 ```
@@ -136,6 +154,8 @@ export default tseslint.config([
           baseDir: __dirname,
         },
       ],
+      // Disallow wildcard (namespace) import/export.
+      "barrel-rules/no-wildcard": ["error"],
     },
   },
 ]);
@@ -157,16 +177,17 @@ import { Test } from "../domains/foo";
 
 ## Future Work
 
-- More rules for module boundaries and abstraction
+- More rules for module boundaries and abstraction (~Ing)
 
 - **Alias/tsconfig Support**  
-  Fully supports TypeScript `paths`, Vite `resolve.alias`, and other custom path mappings
+  Fully supports TypeScript `paths`, Vite `resolve.alias`, and other custom path mappings (~Ing)
 
 - **CJS Support** (OK)
 - **Eslint8 Support** (OK)
 - **Bundle Plugin(capsure any features in plugin)**
   (OK)
 - **Wrong Path Setup Validator** (OK)
+- **Wildcard Import/Export Protection Rule** (OK)
 
 ---
 
