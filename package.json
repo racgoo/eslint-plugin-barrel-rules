@@ -5,6 +5,9 @@
     "type": "git",
     "url": "https://github.com/racgoo/eslint-plugin-barrel-rules"
   },
+  "publishConfig": {
+    "registry": "https://www.npmjs.com/package/eslint-plugin-barrel-rules"
+  },
   "bugs": {
     "url": "https://github.com/racgoo/eslint-plugin-barrel-rules/issues"
   },
