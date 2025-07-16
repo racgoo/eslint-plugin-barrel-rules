@@ -3,7 +3,7 @@
 # **Advanced Barrel Pattern Enforcement for JavaScript/TypeScript Projects**
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-1.1.1-blue.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.1.3-blue.svg" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/>
 </div>
@@ -28,6 +28,10 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
 내부 파일을 직접 import하는 것을 차단하여  
 **모듈화, 추상화, 유지보수성, 확장성**을 극대화합니다.
 
+> 💡 Tip:  
+> 코드 품질을 더욱 강화하고 싶다면, 이 플러그인과 함께 [eslint-plugin-import](https://github.com/import-js/eslint-plugin-import)의 `no-cycle` 룰을 사용하는 것을 추천합니다.  
+> 이를 통해 프로젝트 내의 순환 참조(Import Cycle)도 효과적으로 감지하고 방지할 수 있습니다.
+
 ---
 
 ## 지원 환경
@@ -48,6 +52,17 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
   (예: `import ... from "../domains/foo"`는 허용,  
   `import ... from "../domains/foo/components/Bar"`는 차단)
 
+- **Isolation Barrel Module**  
+  지정한 barrel path 외부의 모듈이 내부 파일을 직접 import하지 못하도록 막을 수 있습니다.  
+  `isolated: true` 옵션을 사용하면 같은 barrel path 내부에서는 자유롭게 import가 가능하고,  
+  외부에서는 해당 barrel path로의 import가 모두 차단됩니다. (barrel(index) 파일을 통한 접근도 불가)  
+  만약 특정 공유 import 경로만 허용하고 싶다면 `allowedImportPaths` 옵션을 사용할 수 있습니다.  
+  이를 통해 각 모듈의 경계를 엄격하게 보호하고, 모듈의 독립성을 유지할 수 있습니다.
+
+- **와일드카드 import/export 방지**  
+  `import * as foo from "module"` 또는 `export * from "./module"`과 같은 와일드카드(네임스페이스) import/export를 금지합니다.  
+  명시적인 이름 기반 import/export만 허용하여 트리쉐이킹과 코드 명확성을 높입니다.
+
 - **고성능 glob 매칭**  
   `src/domains/*`처럼 glob 패턴으로 여러 디렉토리 지정 가능
 
@@ -56,16 +71,22 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
 ## 규칙(Rules)
 
 1. **enforce-barrel-pattern**  
-   모듈 임포트 시 배럴 패턴(Barrel Pattern)을 강제합니다.  
-   지정한 배럴 파일을 통해서만 임포트가 가능하며, 내부 모듈에 직접 접근하는 것을 방지합니다.
+   모듈 import 시 barrel 패턴을 강제합니다.  
+   지정한 barrel 파일(예: index.ts)로만 import를 허용하고, 내부 모듈에 대한 직접 접근을 차단합니다.
+   `isolated: true` 옵션을 사용하면 같은 barrel path 내부 파일끼리만 import가 가능하며, 외부에서의 import는 barrel 파일을 통한 접근도 모두 차단됩니다.  
+   `allowedImportPaths` 옵션을 사용하면 특정 공유 import 경로만 예외적으로 허용할 수 있습니다.
 
    - **옵션:**
-     - `paths`: 배럴 패턴으로 보호할 디렉토리 경로(`baseDir` 기준 상대경로)
-     - `baseDir` (선택): `paths` 해석 기준이 되는 디렉토리. 기본값은 ESLint 실행 위치입니다.
+     - `paths`: barrel 패턴을 적용할 디렉토리 목록(`baseDir` 기준 상대경로)
+     - `baseDir` (선택): `paths` 기준이 되는 베이스 디렉토리 (기본값: ESLint 실행 디렉토리)
+     - `isolated` (선택): `true`일 경우, barrel path 외부에서의 모든 import를 차단합니다(barrel 파일 통한 접근 포함). 같은 barrel path 내부 또는 `allowedImportPaths`만 허용.
+     - `allowedImportPaths` (선택): isolation 모드에서도 직접 import를 허용할 경로 배열
 
 2. **no-wildcard**  
-   `import * as foo from "module"`, `export * from "./module"`과 같은 와일드카드(네임스페이스) import/export를 금지합니다.  
-   트리쉐이킹 및 코드 명확성을 위해 반드시 개별(named) import/export만 허용합니다.
+   `import * as foo from "module"` 또는 `export * from "./module"`과 같은 와일드카드(네임스페이스) import/export를 금지합니다.  
+   `enforce-barrel-pattern` 룰과 함께 사용하는 것을 적극 추천합니다.  
+   두 룰을 함께 적용하면 모듈 경계를 엄격하게 지킬 수 있을 뿐만 아니라,  
+   트리쉐이킹을 통한 성능 향상과 코드 추적 및 유지보수의 용이성까지 모두 얻을 수 있습니다.
 
 ---
 
@@ -100,6 +121,11 @@ module.exports = {
         // (옵션) 설정하지 않으면 기본값은 ESLint를 실행한 위치(작업 디렉토리)입니다.
         // 예: `npx eslint .`처럼 실행하면, 실행 시점의 현재 디렉토리가 기본값이 됩니다.
         baseDir: __dirname,
+        // isolation 모드 활성화: barrel path 외부에서의 모든 import를 차단합니다.
+        isolated: true,
+        // "shared" 디렉토리만 직접 import를 허용합니다.
+        // 필요에 따라 이 배열에 "node_modules/*" 등 원하는 경로를 자유롭게 추가할 수 있습니다.
+        allowedImportPaths: ["src/typescript/shared", "node_modules/*"],
       },
     ],
     // import * 또는 export * 금지
@@ -149,6 +175,11 @@ export default tseslint.config([
           // (옵션) 설정하지 않으면 기본값은 ESLint를 실행한 위치(작업 디렉토리)입니다.
           // 예: `npx eslint .`처럼 실행하면, 실행 시점의 현재 디렉토리가 기본값이 됩니다.
           baseDir: __dirname,
+          // isolation 모드 활성화: barrel path 외부에서의 모든 import를 차단합니다.
+          isolated: true,
+          // "shared" 디렉토리만 직접 import를 허용합니다.
+          // 필요에 따라 이 배열에 "node_modules/*" 등 원하는 경로를 자유롭게 추가할 수 있습니다.
+          allowedImportPaths: ["src/typescript/shared", "node_modules/*"],
         },
       ],
       // import * 또는 export * 금지
@@ -181,6 +212,7 @@ import { Test } from "../domains/foo";
 - **번들 플러그인(플러그인 내 모든 기능 통합)** (OK)
 - **잘못된 경로 설정 검증 기능** (OK)
 - **와일드카드 import/export 제한 규칙** (OK)
+- **지정한 Barrel 경로 격리** (OK)
 
 ---
 
