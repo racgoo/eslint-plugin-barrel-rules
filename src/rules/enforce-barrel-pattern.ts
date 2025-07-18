@@ -3,6 +3,7 @@ import type { RuleModule } from "@typescript-eslint/utils/ts-eslint";
 import path from "path";
 import resolve from "resolve";
 import { Glob } from "../utils/glob";
+import { Alias } from "../utils/alias";
 
 const BARREL_ENTRY_POINT_FILE_NAMES = [
   "index.ts",
@@ -90,21 +91,34 @@ const enforceBarrelPattern: RuleModule<
     const allowedImportPaths = option.allowedImportPaths.flatMap((_path) => {
       return Glob.resolvePath(_path, baseDir);
     });
+
     return {
       //check only import declaration(ESM)
       ImportDeclaration(node: TSESTree.ImportDeclaration) {
         //get raw import path(ex: "../../../domains/test/hooks/test-hook")
         const rawImportPath = node.source.value as string;
+
         //get absolute current file path(each file)
         const absoluteCurrentFilePath = context.getFilename();
+
         //get resolved path
         let absoluteImportPath: string | null = null;
         try {
-          //resolve import path
-          absoluteImportPath = resolve.sync(rawImportPath, {
-            basedir: path.dirname(absoluteCurrentFilePath),
-            extensions: RESOLVE_EXTENSIONS,
-          });
+          //try to resolve with alias
+          const aliasResult = Alias.resolvePath(
+            rawImportPath,
+            path.dirname(absoluteCurrentFilePath)
+          );
+          if (aliasResult.type === "success") {
+            //alias resolved
+            absoluteImportPath = aliasResult.absolutePath;
+          } else {
+            //alias not resolved
+            absoluteImportPath = resolve.sync(rawImportPath, {
+              basedir: path.dirname(absoluteCurrentFilePath),
+              extensions: RESOLVE_EXTENSIONS,
+            });
+          }
         } catch (e) {
           //not found
           return;
