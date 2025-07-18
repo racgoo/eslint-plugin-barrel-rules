@@ -3,7 +3,7 @@
 # **Advanced Barrel Pattern Enforcement for JavaScript/TypeScript Projects**
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-1.1.3-blue.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.2.0-blue.svg" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/>
 </div>
@@ -39,7 +39,12 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
 - ESLint 9
   > Flat config(eslint.config.js), TypeScript 지원 시 "typescript-eslint" config 사용 필요
 - ESLint 8
+
   > Legacy config(.eslintrc.js), TypeScript 지원 시 "@typescript-eslint/parser"를 parser로 지정하고, "@typescript-eslint"를 plugin에 추가해야 함
+
+- TypeScript Alias Import 지원
+  > Import 구문에서 TypeScript 경로 별칭(예: `@ts/barrel/inner`)을 `tsconfig.json` 기반으로 자동 해석합니다.  
+  > 단, ESLint 플러그인 설정에서는 alias 사용 불가능 - 상대경로나 절대경로만 사용하세요.
 - Node.js (ES2015 이상)
 - ES 모듈, CommonJS 모듈 모두 지원
 
@@ -193,12 +198,35 @@ export default tseslint.config([
 
 ## 예시
 
+### 1. 배럴 내부파일 직접 접근
+
 ```ts
-// ❌ 내부 파일을 직접 import하면 차단됩니다.
+file(src / index.ts);
+
+// ❌ 내부 파일 직접 import 차단
 import { Test } from "../domains/foo/components/Test";
 
-// ✅ 반드시 배럴(index) 파일을 통해 import해야 합니다.
+// ✅ barrel(index) 파일을 통한 import만 허용
 import { Test } from "../domains/foo";
+```
+
+### 2. 격리된 모듈 접근 (TypeScript Alias 지원)
+
+```ts
+file(src / domains / foo / index.ts);
+
+// ❌ 격리된 barrel로의 외부 import 차단 (alias 사용해도 차단)
+// barrel 외부에서 접근 (bar의 경로는 src/domains/bar/)
+import { Test } from "@domains/bar/components/Test";
+// 또는
+import { Test } from "../domains/bar";
+
+// ✅ 같은 barrel 내부에서의 import는 허용 (alias 지원)
+import { Hook } from "@domains/foo/hooks/useTest"; // 같은 barrel 내부에서
+import { Utils } from "./utils/helper"; // 같은 barrel 내부에서
+
+// ✅ 허용된 import 경로는 사용 가능 (alias 지원)
+import { SharedUtil } from "@shared/utils"; // allowedImportPaths에 "src/shared/*"가 있는 경우
 ```
 
 ---
@@ -206,7 +234,7 @@ import { Test } from "../domains/foo";
 ## 앞으로의 계획
 
 - 더 다양한 모듈 경계/추상화 관련 룰 추가 예정 (~Ing)
-- Alias/tsconfig 지원: TypeScript의 paths, Vite의 resolve.alias, 기타 커스텀 경로 매핑을 완벽하게 지원 (~Ing)
+- **Alias/tsconfig 지원: TypeScript의 paths 맵핑 완벽하게 지원** (OK)
 - **CJS 지원** (OK)
 - **ESLint 8 지원** (OK)
 - **번들 플러그인(플러그인 내 모든 기능 통합)** (OK)
