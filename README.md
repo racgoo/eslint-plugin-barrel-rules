@@ -3,7 +3,7 @@
 # **Advanced Barrel Pattern Enforcement for JavaScript/TypeScript Projects**
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-1.1.3-blue.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.2.0-blue.svg" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/>
 </div>
@@ -43,6 +43,9 @@ Direct imports from internal files are blocked, maximizing
   > Flat config(eslint.config.js), for TypeScript support, use the "typescript-eslint" config
 - ESLint 8
   > Legacy config(.eslintrc.js), for TypeScript support, set "@typescript-eslint/parser" as the parser and add "@typescript-eslint" as a plugin
+- TypeScript Alias Import Support
+  > Automatically resolves TypeScript path aliases (e.g., `@ts/barrel/inner`) in import statements based on your `tsconfig.json`.  
+  > Note: ESLint plugin configuration does not support aliases - use relative or absolute paths only.
 - Node.js (ES2015+)
 - Supports both ES Modules and CommonJS
 
@@ -194,14 +197,37 @@ export default tseslint.config([
 
 ---
 
-## Example
+## Examples
+
+### 1. Direct Access
 
 ```ts
+file(src / index.ts);
+
 // ❌ Direct import from internal file is blocked
 import { Test } from "../domains/foo/components/Test";
 
 // ✅ Must import via the barrel (index) file
 import { Test } from "../domains/foo";
+```
+
+### 2. Isolated Module Access (with TypeScript Alias Support)
+
+```ts
+file(src / domains / foo / index.ts);
+
+// ❌ External import to isolated barrel is blocked (even with alias)
+// from outside barrel (bar's path is src/domains/bar/)
+import { Test } from "@domains/bar/components/Test";
+// or
+import { Test } from "../domains/bar";
+
+// ✅ Internal imports within same barrel are allowed (alias supported)
+import { Hook } from "@domains/foo/hooks/useTest"; // from inside same barrel
+import { Utils } from "./utils/helper"; // from inside same barrel
+
+// ✅ Allowed import paths are permitted (alias supported)
+import { SharedUtil } from "@shㅇㅇared/utils"; // if "src/shared/*" is in allowedImportPaths
 ```
 
 ---
@@ -211,8 +237,7 @@ import { Test } from "../domains/foo";
 - More rules for module boundaries and abstraction (~Ing)
 
 - **Alias/tsconfig Support**  
-  Fully supports TypeScript `paths`, Vite `resolve.alias`, and other custom path mappings (~Ing)
-
+  Fully supports TypeScript `paths` (OK)
 - **CJS Support** (OK)
 - **Eslint8 Support** (OK)
 - **Bundle Plugin(capsure any features in plugin)**
