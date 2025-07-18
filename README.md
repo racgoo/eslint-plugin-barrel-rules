@@ -227,7 +227,7 @@ import { Hook } from "@domains/foo/hooks/useTest"; // from inside same barrel
 import { Utils } from "./utils/helper"; // from inside same barrel
 
 // ✅ Allowed import paths are permitted (alias supported)
-import { SharedUtil } from "@shㅇㅇared/utils"; // if "src/shared/*" is in allowedImportPaths
+import { SharedUtil } from "@shared/utils"; // if "src/shared/*" is in allowedImportPaths
 ```
 
 ---
