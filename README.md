@@ -3,7 +3,7 @@
 # **Advanced Barrel Pattern Enforcement for JavaScript/TypeScript Projects**
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-1.2.0-blue.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.3.0-blue.svg" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/>
 </div>
@@ -60,10 +60,9 @@ Direct imports from internal files are blocked, maximizing
 
 - **Isolation Barrel Module**  
   You can prevent modules outside the specified barrel path from directly importing internal files.  
-  By enabling `isolated: true`, only files within the same barrel path can freely import each other.  
+  By enabling `isolate-barrel-file`, only files within the same barrel path can freely import each other.  
   Any import from outside the enforced barrel path is completely blocked, even if it tries to import via the barrel (index) file.  
-  If you want to allow specific shared imports, you can use the `allowedImportPaths` option.  
-  This helps you strictly protect your module boundaries and keep each module truly independent.
+  If you want to allow specific shared imports, you can use the `allowedPaths` or `globalAllowedPaths` option.  
 
 - **Prevent Wildcard Import/Export**  
   Disallows wildcard (namespace) imports and exports such as `import * as foo from "module"` or `export * from "./module"`.  
@@ -76,23 +75,26 @@ Direct imports from internal files are blocked, maximizing
 
 ## Rules
 
-1. **enforce-barrel-pattern**  
+1. **enforce-barrel-pattern** (Isolation is exracted as new rule :))
    Enforces the barrel pattern for module imports.  
    Only allows imports from designated barrel files and prevents direct access to internal modules.
-   When `isolated: true` is set, only files within the same barrel path can import each other, and any import from outside the barrel path is completely blocked (even via the barrel file).  
-   You can allow specific shared import paths by using the `allowedImportPaths` option.
-
    - **Options:**
      - `paths`: The directories to be protected by the barrel pattern (relative to `baseDir`).
-     - `baseDir` (optional): The base directory for resolving `paths`. Defaults to the ESLint execution directory.
-     - `isolated` (optional): If `true`, blocks all imports from outside the barrel path, even via the barrel file. Only allows imports within the same barrel path or from `allowedImportPaths`.
-     - `allowedImportPaths` (optional): Array of paths that are allowed to be imported directly, even in isolation mode.
+     - `baseDir`: The base directory for resolving `paths`. Defaults to the ESLint execution directory.
 
 2. **no-wildcard**  
    Disallows wildcard (namespace) imports such as `import * as foo from "module"` or `export * from "./module"`.  
    We highly recommend enabling this rule together with the `enforce-barrel-pattern` rule.  
    Using both rules together not only enforces strict module boundaries,  
    but also improves performance through better tree-shaking and makes code tracing and maintenance much easier.
+
+3. **isolate-barrel-file** (New Rules!!!)
+   Only files within the same barrel path can import each other, and any import from outside the barrel path is completely blocked (even via the barrel file).
+   You can allow specific shared import paths by using the `allowedPaths` option.
+    - **Options:**
+      - `isolations(Array<{ path: string, allowedPaths: string[] }>)`: If you set isolation path, blocks all imports from outside the barrel path, even via the barrel file. Only allows imports within the same barrel path or from `allowedPaths` or `globalAllowedPaths`.
+      - `baseDir`: The base directory for resolving `paths`. Defaults to the ESLint execution directory.
+      - `globalAllowedPaths` : Array of paths that are allowed to be imported directly, even in isolation mode.
 
 ---
 
@@ -119,23 +121,44 @@ module.exports = {
   parser: "@typescript-eslint/parser",
   plugins: ["@typescript-eslint", "barrel-rules"],
   rules: {
-    "barrel-rules/enforce-barrel-pattern": [
-      "error",
-      {
-        // The path to the directory that should be protected by using a barrel file. This path is relative to baseDir.
-        paths: ["src/typescript/barrel/*", "src/javascript/barrel/*"],
-        // Optional config. The default value is the directory where ESLint is executed.
-// For example, if you run `npx eslint .`, the default will be the current working directory at the time of execution.
-        baseDir: __dirname,
-        // Enable isolation mode: block all imports from outside the barrel path
-        isolated: true,
-        // Allow direct imports only from the "shared" directory.
-        // You can customize this array as needed, e.g., add "node_modules/..." or any other path you want to allow.
-        allowedImportPaths: ["src/typescript/shared", "node_modules/*"],
-      },
-    ],
-    // Disallow wildcard (namespace) import/export.
-    "barrel-rules/no-wildcard": ["error"],
+
+   //enforce barrel capsuling
+      "barrel-rules/enforce-barrel-pattern": [
+        "error",
+        {
+          // encapsulation barrel file
+          paths: ["src/pages/*", "src/features/*", "src/entities/*"],
+          baseDir: __dirname,
+        },
+      ],
+
+      //protect barrel file from outside module
+      "barrel-rules/isolate-barrel-file": [
+        "error",
+        {
+          //isolation options
+          isolations: [
+            {
+              path: "src/pages/*",
+              allowedPaths: ["src/features/*", "src/entities/*"],
+            },
+            {
+              path: "src/features/*",
+              allowedPaths: ["src/entities/*"],
+            },
+            {
+              path: "src/entities/*",
+              allowedPaths: [],
+            },
+          ],
+          baseDir: __dirname,
+          globalAllowPaths: ["src/shares/*", "node_modules/*"],
+        },
+      ],
+
+      // protect wildcard import/export
+      "barrel-rules/no-wildcard": ["error"],
+
   },
 };
 ```
@@ -173,23 +196,44 @@ export default tseslint.config([
     },
     //just set your setting for barrel-rules
     rules: {
+
+      //enforce barrel capsuling
       "barrel-rules/enforce-barrel-pattern": [
         "error",
         {
-          // The path to the directory that should be protected by using a barrel file. This path is relative to baseDir.
-          paths: ["src/typescript/barrel/*"],
-          // Optional config. The default value is the directory where ESLint is executed.
-          // For example, if you run `npx eslint .`, the default will be the current working directory at the time of execution.
+          // encapsulation barrel file
+          paths: ["src/pages/*", "src/features/*", "src/entities/*"],
           baseDir: __dirname,
-          // Enable isolation mode: block all imports from outside the barrel path
-          isolated: true,
-          // Allow direct imports only from the "shared" directory.
-          // You can customize this array as needed, e.g., add "node_modules/*" or any other path you want to allow.
-          allowedImportPaths: ["src/typescript/shared", "node_modules/*"],
         },
       ],
-      // Disallow wildcard (namespace) import/export.
+
+      //protect barrel file from outside module
+      "barrel-rules/isolate-barrel-file": [
+        "error",
+        {
+          //isolation options
+          isolations: [
+            {
+              path: "src/pages/*",
+              allowedPaths: ["src/features/*", "src/entities/*"],
+            },
+            {
+              path: "src/features/*",
+              allowedPaths: ["src/entities/*"],
+            },
+            {
+              path: "src/entities/*",
+              allowedPaths: [],
+            },
+          ],
+          baseDir: __dirname,
+          globalAllowPaths: ["src/shares/*", "node_modules/*"],
+        },
+      ],
+
+      // protect wildcard import/export
       "barrel-rules/no-wildcard": ["error"],
+
     },
   },
 ]);
@@ -219,15 +263,13 @@ file(src / domains / foo / index.ts);
 // ❌ External import to isolated barrel is blocked (even with alias)
 // from outside barrel (bar's path is src/domains/bar/)
 import { Test } from "@domains/bar/components/Test";
-// or
-import { Test } from "../domains/bar";
 
 // ✅ Internal imports within same barrel are allowed (alias supported)
 import { Hook } from "@domains/foo/hooks/useTest"; // from inside same barrel
 import { Utils } from "./utils/helper"; // from inside same barrel
 
 // ✅ Allowed import paths are permitted (alias supported)
-import { SharedUtil } from "@shared/utils"; // if "src/shared/*" is in allowedImportPaths
+import { SharedUtil } from "@shared/utils"; // if "src/shared/*" is in allowedPaths or globalAllowedPaths
 ```
 
 ---
