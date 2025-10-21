@@ -1,4 +1,4 @@
-import { TSESTree } from "@typescript-eslint/utils";
+import { TSESTree } from "@typescript-eslint/types";
 import type { RuleModule } from "@typescript-eslint/utils/ts-eslint";
 
 type NoWildcardImportMessageId = "NoWildcardImport";

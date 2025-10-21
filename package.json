@@ -33,12 +33,21 @@
   "scripts": {
     "build": "tsup src/index.ts --dts --format cjs,esm",
     "type-check": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
     "release": "pnpm run build && pnpm publish --access=public"
   },
   "dependencies": {
+    "@types/jest": "^30.0.0",
+    "@typescript-eslint/parser": "^8.46.2",
+    "@typescript-eslint/rule-tester": "^8.46.2",
+    "@typescript-eslint/types": "^8.46.2",
     "@typescript-eslint/utils": "^8.36.0",
     "fast-glob": "^3.3.3",
+    "jest": "^30.2.0",
     "resolve": "^1.22.10",
+    "ts-jest": "^29.4.5",
     "tsconfig-paths": "^4.2.0"
   },
   "devDependencies": {

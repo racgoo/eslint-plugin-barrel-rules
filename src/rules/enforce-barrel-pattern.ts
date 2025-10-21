@@ -1,5 +1,6 @@
-import { TSESTree } from "@typescript-eslint/utils";
+import { TSESTree } from "@typescript-eslint/types";
 import type { RuleModule } from "@typescript-eslint/utils/ts-eslint";
+
 import path from "path";
 import resolve from "resolve";
 import { Glob } from "../utils/glob";
@@ -32,16 +33,15 @@ type Option = {
   //baseDir: base directory of the project
   baseDir: string;
   //isolated: true -> only allowedPaths are allowed to be imported
-  isolated: boolean;
+  // isolated: boolean;
   //allowedImportPaths: paths that are allowed to be imported
-  allowedImportPaths: string[];
+  // allowedImportPaths: string[];
 };
-
+type TransformedAliasResolveFailedMessageId = "TransformedAliasResolveFailed";
 type DirectImportMessageId = "DirectImportDisallowed";
-type IsolatedBarrelImportMessageId = "IsolatedBarrelImportDisallowed";
 
 const enforceBarrelPattern: RuleModule<
-  DirectImportMessageId | IsolatedBarrelImportMessageId,
+  DirectImportMessageId | TransformedAliasResolveFailedMessageId,
   Option[]
 > = {
   meta: {
@@ -55,18 +55,16 @@ const enforceBarrelPattern: RuleModule<
         properties: {
           paths: { type: "array", items: { type: "string" } },
           baseDir: { type: "string" },
-          isolated: { type: "boolean" },
-          allowedImportPaths: { type: "array", items: { type: "string" } },
         },
-        required: ["paths"],
+        required: ["paths", "baseDir"],
         additionalProperties: false,
       },
     ],
     messages: {
+      TransformedAliasResolveFailed:
+        "Transformed alias resolve failed. please check the alias config.",
       DirectImportDisallowed:
         "Please import from '{{matchedTargetPath}}'. Direct access to '{{rawImportPath}}' is not allowed. You must use the barrel pattern and only consume APIs exposed externally. This is to ensure encapsulation of internal logic and maintain module boundaries.",
-      IsolatedBarrelImportDisallowed:
-        "This barrel file is isolated. external import is not allowed. if you want to import outside of the barrel file, please add 'allowedImportPaths' to the plugin options.",
     },
   },
 
@@ -75,8 +73,8 @@ const enforceBarrelPattern: RuleModule<
     {
       paths: [],
       baseDir: process.cwd(),
-      isolated: false,
-      allowedImportPaths: [],
+      // isolated: false,
+      // allowedImportPaths: [],
     },
   ],
   create(context) {
@@ -85,10 +83,6 @@ const enforceBarrelPattern: RuleModule<
     const baseDir = option.baseDir;
     //get target paths(allowed wildcard with fast-glob)
     const absoluteTargetPaths = option.paths.flatMap((_path) => {
-      return Glob.resolvePath(_path, baseDir);
-    });
-    //get allowed import paths(when isolated is true, only allowedImportPaths are allowed to be imported)
-    const allowedImportPaths = option.allowedImportPaths.flatMap((_path) => {
       return Glob.resolvePath(_path, baseDir);
     });
 
@@ -120,7 +114,12 @@ const enforceBarrelPattern: RuleModule<
             });
           }
         } catch (e) {
-          //not found
+          //alias resolve failed
+          console.error(e);
+          context.report({
+            node,
+            messageId: "TransformedAliasResolveFailed",
+          });
           return;
         }
 
@@ -177,51 +176,6 @@ const enforceBarrelPattern: RuleModule<
                 matchedTargetPath: matchedLatestTargetPath,
               },
             });
-          }
-        }
-
-        //enforce isolated code block
-        {
-          if (option.isolated) {
-            //check if current file is in the enforce barrel(outside of enforced barrel is not needed)
-            const currentFileInEnforceBarrel = absoluteTargetPaths.some(
-              (absoluteTargetPath) => {
-                const closedTargetPath = absoluteTargetPath + "/";
-                return absoluteCurrentFilePath.startsWith(closedTargetPath);
-              }
-            );
-
-            //check if the import is in the same barrel
-            const sameBarrel = absoluteTargetPaths.some(
-              (absoluteTargetPath) => {
-                const closedTargetPath = absoluteTargetPath + "/";
-                //check if the import is in the enforce barrel
-                const importedEnforceBarrelFile =
-                  absoluteImportPath.startsWith(closedTargetPath);
-                //check if the current file is in the enforce barrel
-                const currentFileInEnforceBarrel =
-                  absoluteCurrentFilePath.startsWith(closedTargetPath);
-                return importedEnforceBarrelFile && currentFileInEnforceBarrel;
-              }
-            );
-
-            //check if the import path is in the allowed import paths
-            const allowedImportPath = allowedImportPaths.some(
-              (allowedImportPath) => {
-                return absoluteImportPath.startsWith(allowedImportPath);
-              }
-            );
-            //report if the import path is not in the allowed import paths and not in the same barrel and current file is in the enforce barrel
-            if (
-              !allowedImportPath &&
-              !sameBarrel &&
-              currentFileInEnforceBarrel
-            ) {
-              context.report({
-                node,
-                messageId: "IsolatedBarrelImportDisallowed",
-              });
-            }
           }
         }
       },
