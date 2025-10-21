@@ -3,7 +3,7 @@
 # **Advanced Barrel Pattern Enforcement for JavaScript/TypeScript Projects**
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-1.2.0-blue.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.3.0-blue.svg" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/>
 </div>
@@ -58,11 +58,7 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
   `import ... from "../domains/foo/components/Bar"`는 차단)
 
 - **Isolation Barrel Module**  
-  지정한 barrel path 외부의 모듈이 내부 파일을 직접 import하지 못하도록 막을 수 있습니다.  
-  `isolated: true` 옵션을 사용하면 같은 barrel path 내부에서는 자유롭게 import가 가능하고,  
-  외부에서는 해당 barrel path로의 import가 모두 차단됩니다. (barrel(index) 파일을 통한 접근도 불가)  
-  만약 특정 공유 import 경로만 허용하고 싶다면 `allowedImportPaths` 옵션을 사용할 수 있습니다.  
-  이를 통해 각 모듈의 경계를 엄격하게 보호하고, 모듈의 독립성을 유지할 수 있습니다.
+  지정한 barrel path 외부의 모듈이 내부 파일을 직접 import하지 못하도록 막을 수 있습니다.
 
 - **와일드카드 import/export 방지**  
   `import * as foo from "module"` 또는 `export * from "./module"`과 같은 와일드카드(네임스페이스) import/export를 금지합니다.  
@@ -75,23 +71,26 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
 
 ## 규칙(Rules)
 
-1. **enforce-barrel-pattern**  
+1. **enforce-barrel-pattern**  (isolate 옵션이 제거되었습니다.)
    모듈 import 시 barrel 패턴을 강제합니다.  
    지정한 barrel 파일(예: index.ts)로만 import를 허용하고, 내부 모듈에 대한 직접 접근을 차단합니다.
-   `isolated: true` 옵션을 사용하면 같은 barrel path 내부 파일끼리만 import가 가능하며, 외부에서의 import는 barrel 파일을 통한 접근도 모두 차단됩니다.  
-   `allowedImportPaths` 옵션을 사용하면 특정 공유 import 경로만 예외적으로 허용할 수 있습니다.
-
    - **옵션:**
      - `paths`: barrel 패턴을 적용할 디렉토리 목록(`baseDir` 기준 상대경로)
-     - `baseDir` (선택): `paths` 기준이 되는 베이스 디렉토리 (기본값: ESLint 실행 디렉토리)
-     - `isolated` (선택): `true`일 경우, barrel path 외부에서의 모든 import를 차단합니다(barrel 파일 통한 접근 포함). 같은 barrel path 내부 또는 `allowedImportPaths`만 허용.
-     - `allowedImportPaths` (선택): isolation 모드에서도 직접 import를 허용할 경로 배열
+     - `baseDir`: `paths` 기준이 되는 베이스 디렉토리 (기본값: ESLint 실행 디렉토리)
 
 2. **no-wildcard**  
    `import * as foo from "module"` 또는 `export * from "./module"`과 같은 와일드카드(네임스페이스) import/export를 금지합니다.  
    `enforce-barrel-pattern` 룰과 함께 사용하는 것을 적극 추천합니다.  
    두 룰을 함께 적용하면 모듈 경계를 엄격하게 지킬 수 있을 뿐만 아니라,  
    트리쉐이킹을 통한 성능 향상과 코드 추적 및 유지보수의 용이성까지 모두 얻을 수 있습니다.
+
+3. **isolate-barrel-file**  (isolated 기능을 새로운 룰로 제작했습니다.)
+   모듈 import 시 barrel 패턴을 강제합니다.  
+   지정한 barrel 파일(예: index.ts)로만 import를 허용하고, 내부 모듈에 대한 직접 접근을 차단합니다.
+   - **옵션:**
+     - `isolations(Array<{ path: string, allowedPaths: string[] }>)`: `path`와 `allowedPaths`로 구성된 isolation을 추가할 수 있습니다.
+     - `baseDir`: `paths` 기준이 되는 베이스 디렉토리 (기본값: ESLint 실행 디렉토리)
+     - `globalAllowedPaths` : 모든 isolations에 공통적으로 허용할 경로를 지정합니다(node_modules ... etc)
 
 ---
 
@@ -118,23 +117,43 @@ module.exports = {
   parser: "@typescript-eslint/parser",
   plugins: ["@typescript-eslint", "barrel-rules"],
   rules: {
-    "barrel-rules/enforce-barrel-pattern": [
-      "error",
-      {
-        // 배럴 파일로 보호할 디렉토리의 경로입니다. baseDir을 기준으로 상대 경로로 설정합니다.
-        paths: ["src/typescript/barrel/*", "src/javascript/barrel/*"],
-        // (옵션) 설정하지 않으면 기본값은 ESLint를 실행한 위치(작업 디렉토리)입니다.
-        // 예: `npx eslint .`처럼 실행하면, 실행 시점의 현재 디렉토리가 기본값이 됩니다.
-        baseDir: __dirname,
-        // isolation 모드 활성화: barrel path 외부에서의 모든 import를 차단합니다.
-        isolated: true,
-        // "shared" 디렉토리만 직접 import를 허용합니다.
-        // 필요에 따라 이 배열에 "node_modules/*" 등 원하는 경로를 자유롭게 추가할 수 있습니다.
-        allowedImportPaths: ["src/typescript/shared", "node_modules/*"],
-      },
-    ],
-    // import * 또는 export * 금지
-    "barrel-rules/no-wildcard": ["error"],
+
+      //barrel-file 캡슐화
+      "barrel-rules/enforce-barrel-pattern": [
+        "error",
+        {
+          // encapsulation barrel file
+          paths: ["src/pages/*", "src/features/*", "src/entities/*"],
+          baseDir: __dirname,
+        },
+      ],
+
+      //barrel file내부에서 외부 모듈 사용 제한
+      "barrel-rules/isolate-barrel-file": [
+        "error",
+        {
+          //isolation options
+          isolations: [
+            {
+              path: "src/pages/*",
+              allowedPaths: ["src/features/*", "src/entities/*"],
+            },
+            {
+              path: "src/features/*",
+              allowedPaths: ["src/entities/*"],
+            },
+            {
+              path: "src/entities/*",
+              allowedPaths: [],
+            },
+          ],
+          baseDir: __dirname,
+          globalAllowPaths: ["src/shares/*", "node_modules/*"],
+        },
+      ],
+
+      // "*"를 사용한 불 분명한 import/export 방지
+      "barrel-rules/no-wildcard": ["error"],
   },
 };
 ```
@@ -172,23 +191,44 @@ export default tseslint.config([
     },
     // barrel-rules에 대한 설정만 추가하면 됩니다.
     rules: {
+
+      //barrel-file 캡슐화
       "barrel-rules/enforce-barrel-pattern": [
         "error",
         {
-          // 배럴 파일로 보호할 디렉토리의 경로입니다. baseDir을 기준으로 상대 경로로 설정합니다.
-          paths: ["src/typescript/barrel/*"],
-          // (옵션) 설정하지 않으면 기본값은 ESLint를 실행한 위치(작업 디렉토리)입니다.
-          // 예: `npx eslint .`처럼 실행하면, 실행 시점의 현재 디렉토리가 기본값이 됩니다.
+          // encapsulation barrel file
+          paths: ["src/pages/*", "src/features/*", "src/entities/*"],
           baseDir: __dirname,
-          // isolation 모드 활성화: barrel path 외부에서의 모든 import를 차단합니다.
-          isolated: true,
-          // "shared" 디렉토리만 직접 import를 허용합니다.
-          // 필요에 따라 이 배열에 "node_modules/*" 등 원하는 경로를 자유롭게 추가할 수 있습니다.
-          allowedImportPaths: ["src/typescript/shared", "node_modules/*"],
         },
       ],
-      // import * 또는 export * 금지
+
+      //barrel file내부에서 외부 모듈 사용 제한
+      "barrel-rules/isolate-barrel-file": [
+        "error",
+        {
+          //isolation options
+          isolations: [
+            {
+              path: "src/pages/*",
+              allowedPaths: ["src/features/*", "src/entities/*"],
+            },
+            {
+              path: "src/features/*",
+              allowedPaths: ["src/entities/*"],
+            },
+            {
+              path: "src/entities/*",
+              allowedPaths: [],
+            },
+          ],
+          baseDir: __dirname,
+          globalAllowPaths: ["src/shares/*", "node_modules/*"],
+        },
+      ],
+
+      // "*"를 사용한 불 분명한 import/export 방지
       "barrel-rules/no-wildcard": ["error"],
+
     },
   },
 ]);
@@ -218,8 +258,6 @@ file(src / domains / foo / index.ts);
 // ❌ 격리된 barrel로의 외부 import 차단 (alias 사용해도 차단)
 // barrel 외부에서 접근 (bar의 경로는 src/domains/bar/)
 import { Test } from "@domains/bar/components/Test";
-// 또는
-import { Test } from "../domains/bar";
 
 // ✅ 같은 barrel 내부에서의 import는 허용 (alias 지원)
 import { Hook } from "@domains/foo/hooks/useTest"; // 같은 barrel 내부에서
