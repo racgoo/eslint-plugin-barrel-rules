@@ -39,9 +39,12 @@ type Option = {
 };
 type TransformedAliasResolveFailedMessageId = "TransformedAliasResolveFailed";
 type DirectImportMessageId = "DirectImportDisallowed";
+type EmptyEslintConfigMessageId = "EmptyEslintConfig";
 
 const enforceBarrelPattern: RuleModule<
-  DirectImportMessageId | TransformedAliasResolveFailedMessageId,
+  | DirectImportMessageId
+  | TransformedAliasResolveFailedMessageId
+  | EmptyEslintConfigMessageId,
   Option[]
 > = {
   meta: {
@@ -65,6 +68,8 @@ const enforceBarrelPattern: RuleModule<
         "Transformed alias resolve failed. please check the alias config.",
       DirectImportDisallowed:
         "Please import from '{{matchedTargetPath}}'. Direct access to '{{rawImportPath}}' is not allowed. You must use the barrel pattern and only consume APIs exposed externally. This is to ensure encapsulation of internal logic and maintain module boundaries.",
+      EmptyEslintConfig:
+        "Please set the eslint config '{{property}}' to the eslint config. if you want to use this rule, please set the eslint config.",
     },
   },
 
@@ -73,13 +78,27 @@ const enforceBarrelPattern: RuleModule<
     {
       paths: [],
       baseDir: process.cwd(),
-      // isolated: false,
-      // allowedImportPaths: [],
     },
   ],
   create(context) {
     //extract options
     const option = context.options[0];
+    if (!option) {
+      return {
+        Program(node) {
+          const option = context.options[0];
+          if (!option) {
+            return context.report({
+              node,
+              messageId: "EmptyEslintConfig",
+              data: {
+                property: "{ path: Array<string>, baseDir: string }",
+              },
+            });
+          }
+        },
+      };
+    }
     const baseDir = option.baseDir;
     //get target paths(allowed wildcard with fast-glob)
     const absoluteTargetPaths = option.paths.flatMap((_path) => {
