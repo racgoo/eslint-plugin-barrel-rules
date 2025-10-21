@@ -31,7 +31,7 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsup src/index.ts --dts --format cjs,esm",
+    "build": "pnpm run test && tsup src/index.ts --dts --format cjs,esm",
     "type-check": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",

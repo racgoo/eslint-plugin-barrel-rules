@@ -110,10 +110,8 @@ const enforceBarrelPattern: RuleModule<
       ImportDeclaration(node: TSESTree.ImportDeclaration) {
         //get raw import path(ex: "../../../domains/test/hooks/test-hook")
         const rawImportPath = node.source.value as string;
-
         //get absolute current file path(each file)
         const absoluteCurrentFilePath = context.getFilename();
-
         //get resolved path
         let absoluteImportPath: string | null = null;
         try {
@@ -134,7 +132,6 @@ const enforceBarrelPattern: RuleModule<
           }
         } catch (e) {
           //alias resolve failed
-          console.error(e);
           context.report({
             node,
             messageId: "TransformedAliasResolveFailed",
