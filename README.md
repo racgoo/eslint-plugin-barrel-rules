@@ -62,7 +62,7 @@ Direct imports from internal files are blocked, maximizing
   You can prevent modules outside the specified barrel path from directly importing internal files.  
   By enabling `isolate-barrel-file`, only files within the same barrel path can freely import each other.  
   Any import from outside the enforced barrel path is completely blocked, even if it tries to import via the barrel (index) file.  
-  If you want to allow specific shared imports, you can use the `allowedPaths` or `globalAllowedPaths` option.  
+  If you want to allow specific shared imports, you can use the `allowedPaths` or `globalAllowedPaths` option.
 
 - **Prevent Wildcard Import/Export**  
   Disallows wildcard (namespace) imports and exports such as `import * as foo from "module"` or `export * from "./module"`.  
@@ -78,6 +78,7 @@ Direct imports from internal files are blocked, maximizing
 1. **enforce-barrel-pattern** (Isolation is exracted as new rule :))
    Enforces the barrel pattern for module imports.  
    Only allows imports from designated barrel files and prevents direct access to internal modules.
+
    - **Options:**
      - `paths`: The directories to be protected by the barrel pattern (relative to `baseDir`).
      - `baseDir`: The base directory for resolving `paths`. Defaults to the ESLint execution directory.
@@ -91,10 +92,10 @@ Direct imports from internal files are blocked, maximizing
 3. **isolate-barrel-file** (New Rules!!!)
    Only files within the same barrel path can import each other, and any import from outside the barrel path is completely blocked (even via the barrel file).
    You can allow specific shared import paths by using the `allowedPaths` option.
-    - **Options:**
-      - `isolations(Array<{ path: string, allowedPaths: string[] }>)`: If you set isolation path, blocks all imports from outside the barrel path, even via the barrel file. Only allows imports within the same barrel path or from `allowedPaths` or `globalAllowedPaths`.
-      - `baseDir`: The base directory for resolving `paths`. Defaults to the ESLint execution directory.
-      - `globalAllowedPaths` : Array of paths that are allowed to be imported directly, even in isolation mode.
+   - **Options:**
+     - `isolations(Array<{ path: string, allowedPaths: string[] }>)`: If you set isolation path, blocks all imports from outside the barrel path, even via the barrel file. Only allows imports within the same barrel path or from `allowedPaths` or `globalAllowedPaths`.
+     - `baseDir`: The base directory for resolving `paths`. Defaults to the ESLint execution directory.
+     - `globalAllowedPaths` : Array of paths that are allowed to be imported directly, even in isolation mode.
 
 ---
 

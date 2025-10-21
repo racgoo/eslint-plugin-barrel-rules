@@ -71,9 +71,10 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
 
 ## 규칙(Rules)
 
-1. **enforce-barrel-pattern**  (isolate 옵션이 제거되었습니다.)
+1. **enforce-barrel-pattern** (isolate 옵션이 제거되었습니다.)
    모듈 import 시 barrel 패턴을 강제합니다.  
    지정한 barrel 파일(예: index.ts)로만 import를 허용하고, 내부 모듈에 대한 직접 접근을 차단합니다.
+
    - **옵션:**
      - `paths`: barrel 패턴을 적용할 디렉토리 목록(`baseDir` 기준 상대경로)
      - `baseDir`: `paths` 기준이 되는 베이스 디렉토리 (기본값: ESLint 실행 디렉토리)
@@ -84,7 +85,7 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
    두 룰을 함께 적용하면 모듈 경계를 엄격하게 지킬 수 있을 뿐만 아니라,  
    트리쉐이킹을 통한 성능 향상과 코드 추적 및 유지보수의 용이성까지 모두 얻을 수 있습니다.
 
-3. **isolate-barrel-file**  (isolated 기능을 새로운 룰로 제작했습니다.)
+3. **isolate-barrel-file** (isolated 기능을 새로운 룰로 제작했습니다.)
    모듈 import 시 barrel 패턴을 강제합니다.  
    지정한 barrel 파일(예: index.ts)로만 import를 허용하고, 내부 모듈에 대한 직접 접근을 차단합니다.
    - **옵션:**
@@ -191,7 +192,6 @@ export default tseslint.config([
     },
     // barrel-rules에 대한 설정만 추가하면 됩니다.
     rules: {
-
       //barrel-file 캡슐화
       "barrel-rules/enforce-barrel-pattern": [
         "error",
@@ -228,7 +228,6 @@ export default tseslint.config([
 
       // "*"를 사용한 불 분명한 import/export 방지
       "barrel-rules/no-wildcard": ["error"],
-
     },
   },
 ]);
