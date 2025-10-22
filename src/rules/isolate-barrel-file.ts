@@ -7,13 +7,23 @@ import { Alias } from "../utils/alias";
 
 const RESOLVE_EXTENSIONS = [
   ".ts",
-  ".tsx",
   ".js",
+  ".tsx",
   ".jsx",
+  ".json",
+  ".d.js",
   ".d.ts",
+
   ".mjs",
   ".cjs",
-];
+  ".mts",
+  ".cts",
+
+  ".d.mjs",
+  ".d.cjs",
+  ".d.mts",
+  ".d.cts",
+] as const;
 
 type IsolationOption = {
   path: string;
@@ -115,6 +125,14 @@ const isolateBarrelFile: RuleModule<
             //alias resolved
             absoluteImportPath = aliasResult.absolutePath;
           } else {
+            if (
+              (!rawImportPath.startsWith(".") &&
+                !rawImportPath.startsWith("/")) ||
+              rawImportPath.includes("/node_modules/")
+            ) {
+              //node_modules(external import is not forbidden)
+              return;
+            }
             //alias not resolved
             absoluteImportPath = resolve.sync(rawImportPath, {
               basedir: path.dirname(absoluteCurrentFilePath),

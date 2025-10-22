@@ -3,7 +3,7 @@
 # **Advanced Barrel Pattern Enforcement for JavaScript/TypeScript Projects**
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-1.3.0-blue.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.3.1-blue.svg" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/>
 </div>
@@ -32,6 +32,9 @@ Direct imports from internal files are blocked, maximizing
 **modularity, abstraction, maintainability, and scalability**.
 
 > 💡 Tip:  
+> This plugin does not restrict or track imports from `node_modules` (external packages).  
+> The rules only apply to imports of internal (local source file) paths within your project.
+>
 > For even stronger code quality, we recommend using the `no-cycle` rule from [eslint-plugin-import](https://github.com/import-js/eslint-plugin-import) together with this plugin.  
 > This allows you to detect and prevent circular dependencies (import cycles) in your project.
 
@@ -228,7 +231,7 @@ export default tseslint.config([
             },
           ],
           baseDir: __dirname,
-          globalAllowPaths: ["src/shares/*", "node_modules/*"],
+          globalAllowPaths: ["src/shares/*"],
         },
       ],
 

@@ -3,7 +3,7 @@
 # **Advanced Barrel Pattern Enforcement for JavaScript/TypeScript Projects**
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-1.3.0-blue.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.3.1-blue.svg" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/>
 </div>
@@ -28,7 +28,11 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
 내부 파일을 직접 import하는 것을 차단하여  
 **모듈화, 추상화, 유지보수성, 확장성**을 극대화합니다.
 
-> 💡 Tip:  
+> 💡 Tip:
+>
+> > 이 플러그인은 `node_modules`(외부 패키지)의 import는 제한하거나 검사하지 않습니다.  
+> > 모든 규칙은 오직 프로젝트 내부(로컬 소스 파일) 경로의 import에만 적용됩니다.
+>
 > 코드 품질을 더욱 강화하고 싶다면, 이 플러그인과 함께 [eslint-plugin-import](https://github.com/import-js/eslint-plugin-import)의 `no-cycle` 룰을 사용하는 것을 추천합니다.  
 > 이를 통해 프로젝트 내의 순환 참조(Import Cycle)도 효과적으로 감지하고 방지할 수 있습니다.
 
@@ -222,7 +226,7 @@ export default tseslint.config([
             },
           ],
           baseDir: __dirname,
-          globalAllowPaths: ["src/shares/*", "node_modules/*"],
+          globalAllowPaths: ["src/shares/*"],
         },
       ],
 
