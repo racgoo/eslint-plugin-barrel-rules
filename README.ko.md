@@ -3,7 +3,7 @@
 # **Advanced Barrel Pattern Enforcement for JavaScript/TypeScript Projects**
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-1.3.1-blue.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.4.0-blue.svg" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/>
 </div>
@@ -282,6 +282,7 @@ import { SharedUtil } from "@shared/utils"; // allowedImportPaths에 "src/shared
 - **잘못된 경로 설정 검증 기능** (OK)
 - **와일드카드 import/export 제한 규칙** (OK)
 - **지정한 Barrel 경로 격리** (OK)
+- **빈 디렉토리 지원** (예: 'src/shares/\*'가 설정되어 있어도 shares 디렉토리가 비어있어도 됨) (OK)
 
 ---
 

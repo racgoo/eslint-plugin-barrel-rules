@@ -3,7 +3,7 @@
 # **Advanced Barrel Pattern Enforcement for JavaScript/TypeScript Projects**
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-1.3.1-blue.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.4.0-blue.svg" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/>
 </div>
@@ -291,6 +291,7 @@ import { SharedUtil } from "@shared/utils"; // if "src/shared/*" is in allowedPa
 - **Wrong Path Setup Validator** (OK)
 - **Wildcard Import/Export Protection Rule** (OK)
 - **Isolation Barrel Module** (OK)
+- **Empty Directory Support** (e.g., 'src/shares/\*' can be configured even if the shares directory is empty) (OK)
 
 ---
 
