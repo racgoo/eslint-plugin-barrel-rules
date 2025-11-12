@@ -114,104 +114,127 @@ const enforceBarrelPattern: RuleModule<
       return Glob.resolvePath(_path, baseDir);
     });
 
-    return {
-      //check only import declaration(ESM)
-      ImportDeclaration(node: TSESTree.ImportDeclaration) {
-        //get raw import path(ex: "../../../domains/test/hooks/test-hook")
-        const rawImportPath = node.source.value as string;
-        //get absolute current file path(each file)
-        const absoluteCurrentFilePath = context.getFilename();
-        //get resolved path
-        let absoluteImportPath: string | null = null;
-        try {
-          //try to resolve with alias
-          const aliasResult = Alias.resolvePath(
-            rawImportPath,
-            path.dirname(absoluteCurrentFilePath)
-          );
-          if (aliasResult.type === "success") {
-            //alias resolved
-            absoluteImportPath = aliasResult.absolutePath;
-          } else {
-            if (
-              (!rawImportPath.startsWith(".") &&
-                !rawImportPath.startsWith("/")) ||
-              rawImportPath.includes("/node_modules/")
-            ) {
-              //node_modules(external import is not forbidden)
-              return;
-            }
+    function checker(
+      node:
+        | TSESTree.ImportDeclaration
+        | TSESTree.ExportNamedDeclaration
+        | TSESTree.ExportAllDeclaration
+    ) {
+      //check if the import is a source import(from external module)
+      if (!node.source) {
+        //not "from external" is passed
+        return;
+      }
 
-            //alias not resolved
-            absoluteImportPath = resolve.sync(rawImportPath, {
-              basedir: path.dirname(absoluteCurrentFilePath),
-              extensions: RESOLVE_EXTENSIONS,
-            });
+      //get raw import path(ex: "../../../domains/test/hooks/test-hook")
+      const rawImportPath = node.source.value as string;
+      //get absolute current file path(each file)
+      const absoluteCurrentFilePath = context.getFilename();
+      //get resolved path
+      let absoluteImportPath: string | null = null;
+      try {
+        //try to resolve with alias
+        const aliasResult = Alias.resolvePath(
+          rawImportPath,
+          path.dirname(absoluteCurrentFilePath)
+        );
+        if (aliasResult.type === "success") {
+          //alias resolved
+          absoluteImportPath = aliasResult.absolutePath;
+        } else {
+          if (
+            (!rawImportPath.startsWith(".") &&
+              !rawImportPath.startsWith("/")) ||
+            rawImportPath.includes("/node_modules/")
+          ) {
+            //node_modules(external import is not forbidden)
+            return;
           }
-        } catch (e) {
-          //alias resolve failed
+
+          //alias not resolved
+          absoluteImportPath = resolve.sync(rawImportPath, {
+            basedir: path.dirname(absoluteCurrentFilePath),
+            extensions: RESOLVE_EXTENSIONS,
+          });
+        }
+      } catch (e) {
+        //alias resolve failed
+        context.report({
+          node,
+          messageId: "TransformedAliasResolveFailed",
+        });
+        return;
+      }
+
+      //enforce barrel pattern code block
+      {
+        //matched latest target path for display
+        let matchedLatestTargetPath: string | null = null;
+
+        //check if the import path is invalid
+        const invalidDirectedImport = absoluteTargetPaths.some(
+          (absoluteTargetPath) => {
+            const targetPathEntryPoints = BARREL_ENTRY_POINT_FILE_NAMES.map(
+              (entry) => path.resolve(absoluteTargetPath, entry)
+            );
+
+            //add "/" to the target path for string comparison(ex: "src/domains/test2","src/domains/test3" can be catched with "test")
+            const closedTargetPath = absoluteTargetPath + "/";
+
+            //check if the import path is a target path entry point(targetted barrel pattern entry point)
+            const targetPathEntryPointed =
+              targetPathEntryPoints.includes(absoluteImportPath);
+
+            //check if the import is in the enforce barrel
+            const importedEnforceBarrelFile =
+              absoluteImportPath.startsWith(closedTargetPath);
+
+            //check if the current file is in the enforce barrel
+            const currentFileInEnforceBarrel =
+              absoluteCurrentFilePath.startsWith(closedTargetPath);
+
+            //check if capsured logic in target is imported outside of the target path(ex: target is 'test', "src/domains/test/components/Test.tsx" is imported at  "src/pages/menu")
+            const importedOutsideOfTargetPath =
+              !currentFileInEnforceBarrel && importedEnforceBarrelFile;
+
+            //check if the import path is valid
+            const invalidImported =
+              !targetPathEntryPointed && importedOutsideOfTargetPath;
+
+            //store the matched latest target path
+            if (invalidImported) {
+              matchedLatestTargetPath = absoluteTargetPath;
+            }
+            return invalidImported;
+          }
+        );
+
+        //report if the import path is invalid in some of the target paths
+        if (invalidDirectedImport) {
           context.report({
             node,
-            messageId: "TransformedAliasResolveFailed",
+            messageId: "DirectImportDisallowed",
+            data: {
+              rawImportPath,
+              matchedTargetPath: matchedLatestTargetPath,
+            },
           });
-          return;
         }
+      }
+    }
 
-        //enforce barrel pattern code block
-        {
-          //matched latest target path for display
-          let matchedLatestTargetPath: string | null = null;
-
-          //check if the import path is invalid
-          const invalidDirectedImport = absoluteTargetPaths.some(
-            (absoluteTargetPath) => {
-              const targetPathEntryPoints = BARREL_ENTRY_POINT_FILE_NAMES.map(
-                (entry) => path.resolve(absoluteTargetPath, entry)
-              );
-
-              //add "/" to the target path for string comparison(ex: "src/domains/test2","src/domains/test3" can be catched with "test")
-              const closedTargetPath = absoluteTargetPath + "/";
-
-              //check if the import path is a target path entry point(targetted barrel pattern entry point)
-              const targetPathEntryPointed =
-                targetPathEntryPoints.includes(absoluteImportPath);
-
-              //check if the import is in the enforce barrel
-              const importedEnforceBarrelFile =
-                absoluteImportPath.startsWith(closedTargetPath);
-
-              //check if the current file is in the enforce barrel
-              const currentFileInEnforceBarrel =
-                absoluteCurrentFilePath.startsWith(closedTargetPath);
-
-              //check if capsured logic in target is imported outside of the target path(ex: target is 'test', "src/domains/test/components/Test.tsx" is imported at  "src/pages/menu")
-              const importedOutsideOfTargetPath =
-                !currentFileInEnforceBarrel && importedEnforceBarrelFile;
-
-              //check if the import path is valid
-              const invalidImported =
-                !targetPathEntryPointed && importedOutsideOfTargetPath;
-
-              //store the matched latest target path
-              if (invalidImported) {
-                matchedLatestTargetPath = absoluteTargetPath;
-              }
-              return invalidImported;
-            }
-          );
-
-          //report if the import path is invalid in some of the target paths
-          if (invalidDirectedImport) {
-            context.report({
-              node,
-              messageId: "DirectImportDisallowed",
-              data: {
-                rawImportPath,
-                matchedTargetPath: matchedLatestTargetPath,
-              },
-            });
-          }
-        }
+    return {
+      ExportNamedDeclaration(node: TSESTree.ExportNamedDeclaration) {
+        //check if the export is a source export(to external module)
+        return checker(node);
+      },
+      ExportAllDeclaration(node: TSESTree.ExportAllDeclaration) {
+        //check if the export is a source export(to external module)
+        return checker(node);
+      },
+      //check only import declaration(ESM)
+      ImportDeclaration(node: TSESTree.ImportDeclaration) {
+        return checker(node);
       },
     };
   },
