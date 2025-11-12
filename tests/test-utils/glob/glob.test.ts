@@ -62,20 +62,18 @@ describe("Glob.resolvePath", () => {
   });
 
   describe("error cases", () => {
-    it("should throw error when no directory found", () => {
-      expect(() => {
-        Glob.resolvePath("src/nonexistent/*", testDataDir);
-      }).toThrow(
-        `[Glob] In baseDir: ${testDataDir}, path: src/nonexistent/*, any directory was not found`
-      );
+    it("should return empty array when no directory found", () => {
+      const result = Glob.resolvePath("src/nonexistent/*", testDataDir);
+
+      expect(result).toHaveLength(0);
+      expect(Array.isArray(result)).toBe(true);
     });
 
-    it("should throw error when specific directory does not exist", () => {
-      expect(() => {
-        Glob.resolvePath("src/nonexistent/dir", testDataDir);
-      }).toThrow(
-        `[Glob] In baseDir: ${testDataDir}, path: src/nonexistent/dir, any directory was not found`
-      );
+    it("should return empty array when specific directory does not exist", () => {
+      const result = Glob.resolvePath("src/nonexistent/dir", testDataDir);
+
+      expect(result).toHaveLength(0);
+      expect(Array.isArray(result)).toBe(true);
     });
   });
 

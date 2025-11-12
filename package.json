@@ -31,7 +31,9 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "pnpm run test && tsup src/index.ts --dts --format cjs,esm",
+    "lint": "eslint src/**/*.ts",
+    "prebuild": "pnpm run test",
+    "build": "tsup src/index.ts --dts --format cjs,esm",
     "type-check": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",

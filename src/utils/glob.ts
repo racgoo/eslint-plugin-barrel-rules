@@ -8,12 +8,8 @@ class Glob {
       onlyDirectories: true,
       absolute: true,
     });
-    //if no directory was found, throw error
-    if (globResult.length === 0) {
-      throw new Error(
-        `[Glob] In baseDir: ${baseDir}, path: ${path}, any directory was not found`
-      );
-    }
+    //if no directory was found, return empty array instead of throwing error
+    //this allows the rule to continue working even if some paths don't exist yet
     return globResult;
   }
 }
