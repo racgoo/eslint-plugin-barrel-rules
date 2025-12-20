@@ -4,26 +4,7 @@ import path from "path";
 import resolve from "resolve";
 import { Glob } from "../utils/glob";
 import { Alias } from "../utils/alias";
-
-const RESOLVE_EXTENSIONS = [
-  ".ts",
-  ".js",
-  ".tsx",
-  ".jsx",
-  ".json",
-  ".d.js",
-  ".d.ts",
-
-  ".mjs",
-  ".cjs",
-  ".mts",
-  ".cts",
-
-  ".d.mjs",
-  ".d.cjs",
-  ".d.mts",
-  ".d.cts",
-] as const;
+import { RESOLVE_EXTENSIONS } from "../utils/constants";
 
 type IsolationOption = {
   path: string;
