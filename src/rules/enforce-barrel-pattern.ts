@@ -117,27 +117,31 @@ const enforceBarrelPattern: RuleModule<
           //alias resolved
           absoluteImportPath = aliasResult.absolutePath;
         } else {
-          // alias resolve failed - non-aliased import is external package
+          // alias resolve failed - check if it's external package
           if (
-            !rawImportPath.startsWith(".") &&
-            !rawImportPath.startsWith("/")
+            (!rawImportPath.startsWith(".") &&
+              !rawImportPath.startsWith("/")) ||
+            rawImportPath.includes("/node_modules/")
           ) {
-            // external package (ex: "react", "@emotion/react") - not enforced
+            // external package (ex: "react", "@emotion/react", or "../../node_modules/...") - not enforced
             return;
           }
 
           // try to resolve with relative path
-          absoluteImportPath = resolve.sync(rawImportPath, {
-            basedir: path.dirname(absoluteCurrentFilePath),
-            extensions: RESOLVE_EXTENSIONS,
-          });
+          try {
+            absoluteImportPath = resolve.sync(rawImportPath, {
+              basedir: path.dirname(absoluteCurrentFilePath),
+              extensions: RESOLVE_EXTENSIONS,
+            });
+          } catch (e) {
+            // relative path resolve failed - might be external package or invalid path
+            // ignore it (don't enforce barrel pattern for invalid paths)
+            return;
+          }
         }
       } catch (e) {
-        //alias resolve failed
-        context.report({
-          node,
-          messageId: "TransformedAliasResolveFailed",
-        });
+        // alias resolve failed - might be invalid path or external package
+        // ignore it (don't enforce barrel pattern for invalid paths)
         return;
       }
 

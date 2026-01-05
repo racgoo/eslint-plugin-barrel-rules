@@ -89,7 +89,7 @@ const isolateBarrelFile: RuleModule<
       //check only import declaration(ESM)
       ImportDeclaration(node: TSESTree.ImportDeclaration) {
         //get raw import path(ex: "../../../domains/test/hooks/test-hook")
-        const rawImportPath = node.source.value as string;
+        const rawImportPath = node.source.value;
 
         // Check if it contains "/node_modules/" - always allow these
         if (rawImportPath.includes("/node_modules/")) {
@@ -101,8 +101,8 @@ const isolateBarrelFile: RuleModule<
         //get resolved path
         let absoluteImportPath: string | null = null;
 
+        //try to resolve with alias
         try {
-          //try to resolve with alias
           const aliasResult = Alias.resolvePath(
             rawImportPath,
             path.dirname(absoluteCurrentFilePath)
@@ -112,8 +112,6 @@ const isolateBarrelFile: RuleModule<
             absoluteImportPath = aliasResult.absolutePath;
 
             // Even if alias resolved, check if it points to node_modules
-            // This handles cases where tsconfig has "*": ["node_modules/*"] or similar
-            // which would make "react" resolve to "/path/to/node_modules/react"
             if (absoluteImportPath.includes("/node_modules/")) {
               // This is an external package, always allowed
               return;
@@ -122,9 +120,11 @@ const isolateBarrelFile: RuleModule<
             // Alias not resolved
             // Check if it's a bare import (external package from node_modules)
             // Bare imports don't start with "." or "/" and are not aliases
+            // or they are in node_modules
             if (
-              !rawImportPath.startsWith(".") &&
-              !rawImportPath.startsWith("/")
+              (!rawImportPath.startsWith(".") &&
+                !rawImportPath.startsWith("/")) ||
+              rawImportPath.includes("/node_modules/")
             ) {
               // This is an external package (e.g., "react", "@emotion/react")
               // External packages are always allowed
@@ -146,42 +146,35 @@ const isolateBarrelFile: RuleModule<
         }
 
         //check if current file is in the isolation path(outside of isolation path is not needed)
-        const isolationIndex = absoluteIsolations.findIndex((isolation) => {
-          const absoluteIsolationPath = isolation.isolationPath;
-          const closedIsolationPath = absoluteIsolationPath + "/";
-          return absoluteCurrentFilePath.startsWith(closedIsolationPath);
-        });
-        const matchedIsolation = absoluteIsolations[isolationIndex];
+        const matchedIsolationIndex = absoluteIsolations.findIndex(
+          (isolation) => {
+            const closedIsolationPath = isolation.isolationPath + "/";
+            return absoluteCurrentFilePath.startsWith(closedIsolationPath);
+          }
+        );
+
+        //get matched isolation
+        const matchedIsolation = absoluteIsolations[matchedIsolationIndex];
+        //if no matched isolation, skip
         if (!matchedIsolation) return;
 
-        //check if the import path is in the allowed import paths
-        const isAllowedImport = matchedIsolation.allowedPaths.some(
-          (allowedPath) => {
-            //check if the import path is the same as the allowed path
-            const same = absoluteImportPath === allowedPath;
-            const closedAllowedPath = allowedPath + "/";
-            //check if the import path is a sub path of the allowed path
-            const sub = absoluteImportPath.startsWith(closedAllowedPath);
-            return same || sub;
-          }
-        );
-
-        //check if the import path is in the global allowed import paths
-        const isGlobalAllowedImport = absoluteGlobalAllowPaths.some(
-          (allowedPath) => {
-            //check if the import path is the same as the allowed path
-            const same = absoluteImportPath === allowedPath;
-            //add "/" to the allowed path for string comparison
-            const closedAllowedPath = allowedPath + "/";
-            //check if the import path is a sub path of the allowed path
-            const sub = absoluteImportPath.startsWith(closedAllowedPath);
-            return same || sub;
-          }
-        );
-        const allowedImport = isAllowedImport || isGlobalAllowedImport;
+        //check if the import path is allowed to be imported
+        const isAllowedImport = [
+          //global allowed import paths
+          ...absoluteGlobalAllowPaths,
+          //allowed import paths in the matched isolation
+          ...matchedIsolation.allowedPaths,
+        ].some((allowedPath) => {
+          //check if the import path is the same as the allowed path
+          const same = absoluteImportPath === allowedPath;
+          const closedAllowedPath = allowedPath + "/";
+          //check if the import path is a sub path of the allowed path
+          const sub = absoluteImportPath.startsWith(closedAllowedPath);
+          return same || sub;
+        });
 
         //report if the import path is not in the allowed import paths
-        if (!allowedImport) {
+        if (!isAllowedImport) {
           context.report({
             node,
             messageId: "IsolatedBarrelImportDisallowed",
