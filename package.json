@@ -1,6 +1,8 @@
 {
   "name": "eslint-plugin-barrel-rules",
   "description": "Enforce barrel module pattern",
+  "version": "1.4.6",
+  "readme": "README.md",
   "repository": {
     "type": "git",
     "url": "https://github.com/racgoo/eslint-plugin-barrel-rules"
@@ -25,7 +27,6 @@
     "isolated barrel module",
     "no-wildcard"
   ],
-  "version": "1.4.5",
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
