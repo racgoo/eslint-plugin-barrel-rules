@@ -101,11 +101,12 @@ const enforceBarrelPattern: RuleModule<
       }
 
       //get raw import path(ex: "../../../domains/test/hooks/test-hook")
-      const rawImportPath = node.source.value as string;
+      const rawImportPath = node.source.value;
       //get absolute current file path(each file)
       const absoluteCurrentFilePath = context.getFilename();
       //get resolved path
       let absoluteImportPath: string | null = null;
+      //try to resolve absoluteImportPath with alias
       try {
         //try to resolve with alias
         const aliasResult = Alias.resolvePath(
@@ -116,16 +117,16 @@ const enforceBarrelPattern: RuleModule<
           //alias resolved
           absoluteImportPath = aliasResult.absolutePath;
         } else {
+          // alias resolve failed - non-aliased import is external package
           if (
-            (!rawImportPath.startsWith(".") &&
-              !rawImportPath.startsWith("/")) ||
-            rawImportPath.includes("/node_modules/")
+            !rawImportPath.startsWith(".") &&
+            !rawImportPath.startsWith("/")
           ) {
-            //node_modules(external import is not forbidden)
+            // external package (ex: "react", "@emotion/react") - not enforced
             return;
           }
 
-          //alias not resolved
+          // try to resolve with relative path
           absoluteImportPath = resolve.sync(rawImportPath, {
             basedir: path.dirname(absoluteCurrentFilePath),
             extensions: RESOLVE_EXTENSIONS,
@@ -140,7 +141,7 @@ const enforceBarrelPattern: RuleModule<
         return;
       }
 
-      //enforce barrel pattern code block
+      // This block separation is just for readability (start of enforce barrel pattern logic)
       {
         //matched latest target path for display
         let matchedLatestTargetPath: string | null = null;
@@ -168,12 +169,12 @@ const enforceBarrelPattern: RuleModule<
               absoluteCurrentFilePath.startsWith(closedTargetPath);
 
             //check if capsured logic in target is imported outside of the target path(ex: target is 'test', "src/domains/test/components/Test.tsx" is imported at  "src/pages/menu")
-            const importedOutsideOfTargetPath =
+            const importedOutsideOfBarrel =
               !currentFileInEnforceBarrel && importedEnforceBarrelFile;
 
             //check if the import path is valid
             const invalidImported =
-              !targetPathEntryPointed && importedOutsideOfTargetPath;
+              !targetPathEntryPointed && importedOutsideOfBarrel;
 
             //store the matched latest target path
             if (invalidImported) {
