@@ -91,6 +91,11 @@ const isolateBarrelFile: RuleModule<
         //get raw import path(ex: "../../../domains/test/hooks/test-hook")
         const rawImportPath = node.source.value as string;
 
+        // Check if it contains "/node_modules/" - always allow these
+        if (rawImportPath.includes("/node_modules/")) {
+          return;
+        }
+
         //get absolute current file path(each file)
         const absoluteCurrentFilePath = context.getFilename();
         //get resolved path
@@ -105,16 +110,27 @@ const isolateBarrelFile: RuleModule<
           if (aliasResult.type === "success") {
             //alias resolved
             absoluteImportPath = aliasResult.absolutePath;
-          } else {
-            if (
-              (!rawImportPath.startsWith(".") &&
-                !rawImportPath.startsWith("/")) ||
-              rawImportPath.includes("/node_modules/")
-            ) {
-              //node_modules(external import is not forbidden)
+
+            // Even if alias resolved, check if it points to node_modules
+            // This handles cases where tsconfig has "*": ["node_modules/*"] or similar
+            // which would make "react" resolve to "/path/to/node_modules/react"
+            if (absoluteImportPath.includes("/node_modules/")) {
+              // This is an external package, always allowed
               return;
             }
-            //alias not resolved
+          } else {
+            // Alias not resolved
+            // Check if it's a bare import (external package from node_modules)
+            // Bare imports don't start with "." or "/" and are not aliases
+            if (
+              !rawImportPath.startsWith(".") &&
+              !rawImportPath.startsWith("/")
+            ) {
+              // This is an external package (e.g., "react", "@emotion/react")
+              // External packages are always allowed
+              return;
+            }
+            //alias not resolved - resolve relative path
             absoluteImportPath = resolve.sync(rawImportPath, {
               basedir: path.dirname(absoluteCurrentFilePath),
               extensions: RESOLVE_EXTENSIONS,

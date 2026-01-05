@@ -13,6 +13,9 @@ tsconfig.json
 .eslintrc.json
 jest.config.js
 
+# 커버리지 파일
+coverage/
+
 # 예제 파일
 example/
 

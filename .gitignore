@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# 커버리지 파일
+coverage
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
