@@ -3,7 +3,7 @@
 # **Advanced Barrel Pattern Enforcement for JavaScript/TypeScript Projects**
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-1.4.4-blue.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.4.5-blue.svg" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/>
 </div>
@@ -35,8 +35,8 @@ Direct imports from internal files are blocked, maximizing
 > This plugin does not restrict or track imports from `node_modules` (external packages).  
 > The rules only apply to imports of internal (local source file) paths within your project.
 >
-> For even stronger code quality, we recommend using the `no-cycle` rule from [eslint-plugin-import](https://github.com/import-js/eslint-plugin-import) together with this plugin.  
-> This allows you to detect and prevent circular dependencies (import cycles) in your project.
+> **Circular Dependency Detection (Beta)**: This plugin now includes a built-in `no-cycle` rule (currently in Beta) that detects circular dependencies.  
+> For production use, you can also use the `no-cycle` rule from [eslint-plugin-import](https://github.com/import-js/eslint-plugin-import) as an alternative.
 
 ---
 
@@ -71,6 +71,12 @@ Direct imports from internal files are blocked, maximizing
   Disallows wildcard (namespace) imports and exports such as `import * as foo from "module"` or `export * from "./module"`.  
   This enforces the use of named imports/exports for better tree-shaking and code clarity.
 
+- **Circular Dependency Detection (Beta)**  
+  Detects and prevents circular dependencies in your import graph.  
+  Supports detection through barrel files and TypeScript aliases.  
+  Also enforces relative imports for internal modules within barrel files.  
+  ⚠️ **Note**: This is a Beta feature and may require additional validation.
+
 - **High-performance glob matching**  
   Specify multiple directories using glob patterns like `src/domains/*`
 
@@ -95,10 +101,22 @@ Direct imports from internal files are blocked, maximizing
 3. **isolate-barrel-file** (New Rules!!!)
    Only files within the same barrel path can import each other, and any import from outside the barrel path is completely blocked (even via the barrel file).
    You can allow specific shared import paths by using the `allowedPaths` option.
+
    - **Options:**
      - `isolations(Array<{ path: string, allowedPaths: string[] }>)`: If you set isolation path, blocks all imports from outside the barrel path, even via the barrel file. Only allows imports within the same barrel path or from `allowedPaths` or `globalAllowedPaths`.
      - `baseDir`: The base directory for resolving `paths`. Defaults to the ESLint execution directory.
      - `globalAllowedPaths` : Array of paths that are allowed to be imported directly, even in isolation mode.
+
+4. **no-cycle** (Beta ⚠️)
+   Detects circular dependencies in your import graph and enforces relative imports for internal modules within barrel files.
+   - **Features:**
+     - Detects bidirectional cycles (A → B and B → A)
+     - Detects longer cycles using DFS (Depth-First Search)
+     - Supports cycle detection through barrel files and TypeScript aliases
+     - Enforces relative imports (./ or ../) for internal modules in barrel files
+   - **Options:**
+     - No options required. The rule automatically analyzes your import graph.
+   - **Note:** This is a Beta feature. While it has been thoroughly tested, additional validation in production environments is recommended.
 
 ---
 
@@ -162,6 +180,9 @@ module.exports = {
 
       // protect wildcard import/export
       "barrel-rules/no-wildcard": ["error"],
+
+      // detect circular dependencies (Beta)
+      "barrel-rules/no-cycle": ["error"],
 
   },
 };
@@ -238,6 +259,9 @@ export default tseslint.config([
       // protect wildcard import/export
       "barrel-rules/no-wildcard": ["error"],
 
+      // detect circular dependencies (Beta)
+      "barrel-rules/no-cycle": ["error"],
+
     },
   },
 ]);
@@ -276,6 +300,29 @@ import { Utils } from "./utils/helper"; // from inside same barrel
 import { SharedUtil } from "@shared/utils"; // if "src/shared/*" is in allowedPaths or globalAllowedPaths
 ```
 
+### 3. Circular Dependency Detection (Beta)
+
+```ts
+// ❌ Circular dependency detected
+// file: src/features/user/user-service.ts
+import { userRepository } from "./user-repository";
+
+// file: src/features/user/user-repository.ts
+import { userService } from "./user-service"; // Error: Circular dependency detected
+
+// ✅ Barrel files must use relative imports for internal modules
+// file: src/features/user/index.ts
+import { userService } from "@features/user/user-service"; // ❌ Error: Use relative path
+import { userService } from "./user-service"; // ✅ Correct
+
+// ✅ No circular dependency
+// file: src/features/user/user-service.ts
+import { userRepository } from "./user-repository";
+
+// file: src/features/user/user-repository.ts
+import { helper } from "./helper"; // No cycle
+```
+
 ---
 
 ## Future Work
@@ -292,6 +339,7 @@ import { SharedUtil } from "@shared/utils"; // if "src/shared/*" is in allowedPa
 - **Wildcard Import/Export Protection Rule** (OK)
 - **Isolation Barrel Module** (OK)
 - **Empty Directory Support** (e.g., 'src/shares/\*' can be configured even if the shares directory is empty) (OK)
+- **Circular Dependency Detection** (Beta - requires additional validation)
 
 ---
 

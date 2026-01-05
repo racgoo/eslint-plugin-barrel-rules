@@ -3,7 +3,7 @@
 # **Advanced Barrel Pattern Enforcement for JavaScript/TypeScript Projects**
 
 <div align="center">
-  <img src="https://img.shields.io/badge/version-1.4.4-blue.svg" alt="Version"/>
+  <img src="https://img.shields.io/badge/version-1.4.5-blue.svg" alt="Version"/>
   <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome"/>
 </div>
@@ -33,8 +33,8 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
 > > 이 플러그인은 `node_modules`(외부 패키지)의 import는 제한하거나 검사하지 않습니다.  
 > > 모든 규칙은 오직 프로젝트 내부(로컬 소스 파일) 경로의 import에만 적용됩니다.
 >
-> 코드 품질을 더욱 강화하고 싶다면, 이 플러그인과 함께 [eslint-plugin-import](https://github.com/import-js/eslint-plugin-import)의 `no-cycle` 룰을 사용하는 것을 추천합니다.  
-> 이를 통해 프로젝트 내의 순환 참조(Import Cycle)도 효과적으로 감지하고 방지할 수 있습니다.
+> **순환 참조 감지 (Beta)**: 이 플러그인에는 이제 내장된 `no-cycle` 규칙(Beta 버전)이 포함되어 있어 순환 참조를 감지합니다.  
+> 프로덕션 환경에서는 [eslint-plugin-import](https://github.com/import-js/eslint-plugin-import)의 `no-cycle` 규칙을 대안으로 사용할 수도 있습니다.
 
 ---
 
@@ -68,6 +68,12 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
   `import * as foo from "module"` 또는 `export * from "./module"`과 같은 와일드카드(네임스페이스) import/export를 금지합니다.  
   명시적인 이름 기반 import/export만 허용하여 트리쉐이킹과 코드 명확성을 높입니다.
 
+- **순환 참조 감지 (Beta)**  
+  import 그래프에서 순환 참조를 감지하고 방지합니다.  
+  배럴 파일과 TypeScript alias를 통한 순환 참조도 감지합니다.  
+  또한 배럴 파일 내부 모듈에 대한 상대 경로 import를 강제합니다.  
+  ⚠️ **참고**: 이는 Beta 기능이며 추가 검증이 필요할 수 있습니다.
+
 - **고성능 glob 매칭**  
   `src/domains/*`처럼 glob 패턴으로 여러 디렉토리 지정 가능
 
@@ -92,10 +98,22 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
 3. **isolate-barrel-file** (isolated 기능을 새로운 룰로 제작했습니다.)
    모듈 import 시 barrel 패턴을 강제합니다.  
    지정한 barrel 파일(예: index.ts)로만 import를 허용하고, 내부 모듈에 대한 직접 접근을 차단합니다.
+
    - **옵션:**
      - `isolations(Array<{ path: string, allowedPaths: string[] }>)`: `path`와 `allowedPaths`로 구성된 isolation을 추가할 수 있습니다.
      - `baseDir`: `paths` 기준이 되는 베이스 디렉토리 (기본값: ESLint 실행 디렉토리)
      - `globalAllowedPaths` : 모든 isolations에 공통적으로 허용할 경로를 지정합니다(node_modules ... etc)
+
+4. **no-cycle** (Beta ⚠️)
+   import 그래프에서 순환 참조를 감지하고, 배럴 파일 내부 모듈에 대한 상대 경로 import를 강제합니다.
+   - **기능:**
+     - 양방향 순환 참조 감지 (A → B와 B → A)
+     - DFS(깊이 우선 탐색)를 통한 긴 순환 참조 감지
+     - 배럴 파일과 TypeScript alias를 통한 순환 참조 감지 지원
+     - 배럴 파일 내부 모듈에 대한 상대 경로 import(./ 또는 ../) 강제
+   - **옵션:**
+     - 옵션 없음. 규칙이 자동으로 import 그래프를 분석합니다.
+   - **참고:** 이는 Beta 기능입니다. 철저히 테스트되었지만, 프로덕션 환경에서의 추가 검증을 권장합니다.
 
 ---
 
@@ -159,6 +177,9 @@ module.exports = {
 
       // "*"를 사용한 불 분명한 import/export 방지
       "barrel-rules/no-wildcard": ["error"],
+
+      // 순환 참조 감지 (Beta)
+      "barrel-rules/no-cycle": ["error"],
   },
 };
 ```
@@ -232,6 +253,9 @@ export default tseslint.config([
 
       // "*"를 사용한 불 분명한 import/export 방지
       "barrel-rules/no-wildcard": ["error"],
+
+      // 순환 참조 감지 (Beta)
+      "barrel-rules/no-cycle": ["error"],
     },
   },
 ]);
@@ -270,6 +294,29 @@ import { Utils } from "./utils/helper"; // 같은 barrel 내부에서
 import { SharedUtil } from "@shared/utils"; // allowedImportPaths에 "src/shared/*"가 있는 경우
 ```
 
+### 3. 순환 참조 감지 (Beta)
+
+```ts
+// ❌ 순환 참조 감지됨
+// 파일: src/features/user/user-service.ts
+import { userRepository } from "./user-repository";
+
+// 파일: src/features/user/user-repository.ts
+import { userService } from "./user-service"; // 에러: 순환 참조 감지됨
+
+// ✅ 배럴 파일은 내부 모듈에 대해 상대 경로를 사용해야 함
+// 파일: src/features/user/index.ts
+import { userService } from "@features/user/user-service"; // ❌ 에러: 상대 경로 사용
+import { userService } from "./user-service"; // ✅ 올바름
+
+// ✅ 순환 참조 없음
+// 파일: src/features/user/user-service.ts
+import { userRepository } from "./user-repository";
+
+// 파일: src/features/user/user-repository.ts
+import { helper } from "./helper"; // 순환 참조 없음
+```
+
 ---
 
 ## 앞으로의 계획
@@ -283,6 +330,7 @@ import { SharedUtil } from "@shared/utils"; // allowedImportPaths에 "src/shared
 - **와일드카드 import/export 제한 규칙** (OK)
 - **지정한 Barrel 경로 격리** (OK)
 - **빈 디렉토리 지원** (예: 'src/shares/\*'가 설정되어 있어도 shares 디렉토리가 비어있어도 됨) (OK)
+- **순환 참조 감지** (Beta - 추가 검증 필요)
 
 ---
 
