@@ -1,7 +1,7 @@
 {
   "name": "eslint-plugin-barrel-rules",
   "description": "Enforce barrel module pattern",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "readme": "README.md",
   "repository": {
     "type": "git",
