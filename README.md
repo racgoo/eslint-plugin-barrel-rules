@@ -42,12 +42,15 @@ Direct imports from internal files are blocked, maximizing
 
 ## Supports
 
+- ESLint 10
+  > Uses the same flat config style and rule configuration as the ESLint 9 example below.
 - ESLint 9
-  > Flat config(eslint.config.js), for TypeScript support, use the "typescript-eslint" config
+  > Flat config(eslint.config.js), for TypeScript support, use the "typescript-eslint" config.
 - ESLint 8
   > Legacy config(.eslintrc.js), for TypeScript support, set "@typescript-eslint/parser" as the parser and add "@typescript-eslint" as a plugin
 - TypeScript Alias Import Support
-  > Automatically resolves TypeScript path aliases (e.g., `@ts/barrel/inner`) in import statements based on your `tsconfig.json`.  
+  > Automatically resolves TypeScript path aliases (e.g., `@ts/barrel/inner`) in import statements based on your root `tsconfig.json`.  
+  > Note: Only aliases defined directly in the project root `tsconfig.json` are tracked. Patterns where you split configs into `tsconfig.app.json`, `tsconfig.node.json`, etc. and reference them from `tsconfig.json` are **not** resolved by this plugin's alias resolver.  
   > Note: ESLint plugin configuration does not support aliases - use relative or absolute paths only.
 - Node.js (ES2015+)
 - Supports both ES Modules and CommonJS
@@ -87,7 +90,6 @@ Direct imports from internal files are blocked, maximizing
 1. **enforce-barrel-pattern** (Isolation is exracted as new rule :))
    Enforces the barrel pattern for module imports.  
    Only allows imports from designated barrel files and prevents direct access to internal modules.
-
    - **Options:**
      - `paths`: The directories to be protected by the barrel pattern (relative to `baseDir`).
      - `baseDir`: The base directory for resolving `paths`. Defaults to the ESLint execution directory.
@@ -101,7 +103,6 @@ Direct imports from internal files are blocked, maximizing
 3. **isolate-barrel-file** (New Rules!!!)
    Only files within the same barrel path can import each other, and any import from outside the barrel path is completely blocked (even via the barrel file).
    You can allow specific shared import paths by using the `allowedPaths` option.
-
    - **Options:**
      - `isolations(Array<{ path: string, allowedPaths: string[] }>)`: If you set isolation path, blocks all imports from outside the barrel path, even via the barrel file. Only allows imports within the same barrel path or from `allowedPaths` or `globalAllowedPaths`.
      - `baseDir`: The base directory for resolving `paths`. Defaults to the ESLint execution directory.
@@ -190,7 +191,7 @@ module.exports = {
 
 ---
 
-## Eslint9 Usage
+## Eslint9 & 10 Usage
 
 ```js
 file(eslintrc.config.js);
@@ -340,6 +341,7 @@ import { helper } from "./helper"; // No cycle
 - **Isolation Barrel Module** (OK)
 - **Empty Directory Support** (e.g., 'src/shares/\*' can be configured even if the shares directory is empty) (OK)
 - **Circular Dependency Detection** (Beta - requires additional validation)
+- **eslint v10 support** (OK)
 
 ---
 

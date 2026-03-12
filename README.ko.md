@@ -40,15 +40,17 @@ JavaScript/TypeScript 프로젝트에서 Barrel Pattern(배럴 패턴)을 강제
 
 ## 지원 환경
 
+- ESLint 10
+  > 아래에 있는 ESLint 9용 flat config 예제와 동일한 방식으로 설정을 사용합니다.
 - ESLint 9
   > Flat config(eslint.config.js), TypeScript 지원 시 "typescript-eslint" config 사용 필요
 - ESLint 8
-
   > Legacy config(.eslintrc.js), TypeScript 지원 시 "@typescript-eslint/parser"를 parser로 지정하고, "@typescript-eslint"를 plugin에 추가해야 함
 
 - TypeScript Alias Import 지원
-  > Import 구문에서 TypeScript 경로 별칭(예: `@ts/barrel/inner`)을 `tsconfig.json` 기반으로 자동 해석합니다.  
-  > 단, ESLint 플러그인 설정에서는 alias 사용 불가능 - 상대경로나 절대경로만 사용하세요.
+  > Import 구문에서 TypeScript 경로 별칭(예: `@ts/barrel/inner`)을 **프로젝트 루트의 `tsconfig.json`** 기반으로 자동 해석합니다.  
+  > 주의: 이 플러그인의 Alias resolver는 **루트 `tsconfig.json`에 직접 정의된 paths만 추적**합니다. `tsconfig.app.json`, `tsconfig.node.json` 등을 따로 만들고, 루트 `tsconfig.json`에서 이들을 합치는 패턴의 alias는 현재 해석하지 않습니다.  
+  > 또한, ESLint 플러그인 설정에서는 alias를 지원하지 않으므로, 상대 경로나 절대 경로만 사용해야 합니다.
 - Node.js (ES2015 이상)
 - ES 모듈, CommonJS 모듈 모두 지원
 
@@ -186,7 +188,7 @@ module.exports = {
 
 ---
 
-## Eslint9 사용법
+## Eslint9 & 10 사용법
 
 ```js
 file(eslintrc.config.js);
@@ -331,6 +333,7 @@ import { helper } from "./helper"; // 순환 참조 없음
 - **지정한 Barrel 경로 격리** (OK)
 - **빈 디렉토리 지원** (예: 'src/shares/\*'가 설정되어 있어도 shares 디렉토리가 비어있어도 됨) (OK)
 - **순환 참조 감지** (Beta - 추가 검증 필요)
+- **eslint v10 지원** (OK)
 
 ---
 
