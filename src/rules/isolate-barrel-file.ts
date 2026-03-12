@@ -97,7 +97,7 @@ const isolateBarrelFile: RuleModule<
         }
 
         //get absolute current file path(each file)
-        const absoluteCurrentFilePath = context.getFilename();
+        const absoluteCurrentFilePath = context.filename;
         //get resolved path
         let absoluteImportPath: string | null = null;
 
@@ -105,7 +105,7 @@ const isolateBarrelFile: RuleModule<
         try {
           const aliasResult = Alias.resolvePath(
             rawImportPath,
-            path.dirname(absoluteCurrentFilePath)
+            path.dirname(absoluteCurrentFilePath),
           );
           if (aliasResult.type === "success") {
             //alias resolved
@@ -150,7 +150,7 @@ const isolateBarrelFile: RuleModule<
           (isolation) => {
             const closedIsolationPath = isolation.isolationPath + "/";
             return absoluteCurrentFilePath.startsWith(closedIsolationPath);
-          }
+          },
         );
 
         //get matched isolation

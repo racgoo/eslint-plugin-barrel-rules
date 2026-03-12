@@ -46,7 +46,7 @@ export { importGraph, barrelExportsCache };
 function isBarrelFile(filePath: string): boolean {
   const fileName = path.basename(filePath);
   return BARREL_ENTRY_POINT_FILE_NAMES.includes(
-    fileName as (typeof BARREL_ENTRY_POINT_FILE_NAMES)[number]
+    fileName as (typeof BARREL_ENTRY_POINT_FILE_NAMES)[number],
   );
 }
 
@@ -71,7 +71,7 @@ function isExternalImport(rawPath: string): boolean {
  */
 function resolveImportPath(
   rawImportPath: string,
-  currentFileDir: string
+  currentFileDir: string,
 ): string | null {
   try {
     // Try alias resolution first
@@ -101,7 +101,7 @@ function resolveImportPath(
  */
 function resolveAliasPath(
   resolvedPath: string,
-  currentFileDir: string
+  currentFileDir: string,
 ): string {
   try {
     // Check if it's a directory
@@ -132,7 +132,7 @@ function resolveAliasPath(
  */
 function getBarrelExports(
   barrelFileDir: string,
-  ast: TSESTree.Program
+  ast: TSESTree.Program,
 ): string[] {
   const exports: string[] = [];
 
@@ -192,7 +192,7 @@ function detectCycle(
   startFile: string,
   visited: Set<string>,
   recStack: Set<string>,
-  currentPath: string[]
+  currentPath: string[],
 ): string[] | null {
   visited.add(startFile);
   recStack.add(startFile);
@@ -231,7 +231,7 @@ function hasBidirectionalCycle(fileA: string, fileB: string): boolean {
  */
 function hasCycleThroughBarrel(
   currentFile: string,
-  exportedModules: string[]
+  exportedModules: string[],
 ): string | null {
   for (const exportedModule of exportedModules) {
     if (exportedModule === currentFile) continue;
@@ -269,7 +269,7 @@ const noCycle: RuleModule<MessageId> = {
   defaultOptions: [],
 
   create(context) {
-    const currentFile = context.getFilename();
+    const currentFile = context.filename;
     const currentDir = path.dirname(currentFile);
 
     // Initialize or reset imports for current file
@@ -293,7 +293,7 @@ const noCycle: RuleModule<MessageId> = {
       node:
         | TSESTree.ImportDeclaration
         | TSESTree.ExportNamedDeclaration
-        | TSESTree.ExportAllDeclaration
+        | TSESTree.ExportAllDeclaration,
     ) {
       if (!node.source) return;
 
@@ -344,7 +344,7 @@ const noCycle: RuleModule<MessageId> = {
      */
     function checkBarrelInternalImport(
       rawPath: string,
-      absolutePath: string
+      absolutePath: string,
     ): string | null {
       const isInternal =
         absolutePath.startsWith(currentDir + path.sep) ||

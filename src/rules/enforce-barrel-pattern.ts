@@ -92,7 +92,7 @@ const enforceBarrelPattern: RuleModule<
       node:
         | TSESTree.ImportDeclaration
         | TSESTree.ExportNamedDeclaration
-        | TSESTree.ExportAllDeclaration
+        | TSESTree.ExportAllDeclaration,
     ) {
       //check if the import is a source import(from external module)
       if (!node.source) {
@@ -103,7 +103,8 @@ const enforceBarrelPattern: RuleModule<
       //get raw import path(ex: "../../../domains/test/hooks/test-hook")
       const rawImportPath = node.source.value;
       //get absolute current file path(each file)
-      const absoluteCurrentFilePath = context.getFilename();
+
+      const absoluteCurrentFilePath = context.filename;
       //get resolved path
       let absoluteImportPath: string | null = null;
       //try to resolve absoluteImportPath with alias
@@ -111,7 +112,7 @@ const enforceBarrelPattern: RuleModule<
         //try to resolve with alias
         const aliasResult = Alias.resolvePath(
           rawImportPath,
-          path.dirname(absoluteCurrentFilePath)
+          path.dirname(absoluteCurrentFilePath),
         );
         if (aliasResult.type === "success") {
           //alias resolved
@@ -154,7 +155,7 @@ const enforceBarrelPattern: RuleModule<
         const invalidDirectedImport = absoluteTargetPaths.some(
           (absoluteTargetPath) => {
             const targetPathEntryPoints = BARREL_ENTRY_POINT_FILE_NAMES.map(
-              (entry) => path.resolve(absoluteTargetPath, entry)
+              (entry) => path.resolve(absoluteTargetPath, entry),
             );
 
             //add "/" to the target path for string comparison(ex: "src/domains/test2","src/domains/test3" can be catched with "test")
@@ -185,7 +186,7 @@ const enforceBarrelPattern: RuleModule<
               matchedLatestTargetPath = absoluteTargetPath;
             }
             return invalidImported;
-          }
+          },
         );
 
         //report if the import path is invalid in some of the target paths
