@@ -280,7 +280,7 @@ const noCycle: RuleModule<MessageId> = {
 
     // Cache barrel file exports
     if (isBarrelFile(currentFile)) {
-      const ast = context.getSourceCode().ast;
+      const ast = context.sourceCode.ast;
       const exports = getBarrelExports(currentDir, ast);
       barrelExportsCache.set(currentFile, exports);
     }
